@@ -67,7 +67,7 @@ class Superlum(Instrument, TunableLaser):
         timeout = 120  # sec
         flags = [True] * 4
 
-        for i in range(timeout):
+        for _ in range(timeout):
             self.get_status()
             if self.aotf_tec and flags[0]:
                 print('AOTF TEC ON...')
@@ -97,16 +97,15 @@ class Superlum(Instrument, TunableLaser):
             raise NameError(
                 'Superlum: Use connect() to connect to the device before the query.')
 
-        response = self.laser_io.readline()
-        return response
+        return self.laser_io.readline()
 
     def analyze_response(self, cmd, resp):
 
         # return a tuple (status_code, status_bool, status_text)
         # depending on sent command and received response
         if self.verbose:
-            print('Superlum sent message: ' + cmd)
-            print('Superlum response: ' + resp)
+            print(f'Superlum sent message: {cmd}')
+            print(f'Superlum response: {resp}')
 
         if resp is None:
             print('No response from Superlum laser')
@@ -114,60 +113,57 @@ class Superlum(Instrument, TunableLaser):
             print('Superlum: common error message')
         elif resp[:2] == '!M':
             print('Superlum: wrong mode set message')
-        else:
-            # Set/get status command
-            if cmd[0] == 'M':
+        elif cmd[0] == 'M':
+            if self.verbose:
+                print(
+                    'Superlum: 1.2 Set device operation mode. Read device status.')
+
+            f = re.match('^M\\S{5}\n$', resp)
+            if f is None:
+                print(f'Could not parse response {resp}')
+            else:
+                self.parse_state(status_string=resp[1:6])
+
+        elif cmd[:3] == 'P21':  # set wavelength command
+            if self.verbose:
+                print('superlum: 1.3 Read / Set device parameter set wavelength')
+
+            if len(cmd) > 4:  # write operation
+                if cmd != resp:
+                    return 0
                 if self.verbose:
-                    print(
-                        'Superlum: 1.2 Set device operation mode. Read device status.')
-
-                f = re.match('^M\\S{5}\n$', resp)
-                if f is None:
-                    print('Could not parse response {}'.format(resp))
-                else:
-                    self.parse_state(status_string=resp[1:6])
-
-            elif cmd[:3] == 'P21':  # set wavelength command
-                if self.verbose:
-                    print('superlum: 1.3 Read / Set device parameter set wavelength')
-
-                if len(cmd) > 4:  # write operation
-                    if cmd == resp:
-                        if self.verbose:
-                            print('set wavelength successful')
-                        return 1
-                    else:
-                        return 0
-                else:  # read operation
-                    wl = self.bwl_wavelength + \
+                    print('set wavelength successful')
+                return 1
+            else:  # read operation
+                wl = self.bwl_wavelength + \
                         float(int(resp[3:-1], 16)) / 100.0
-                    print('current wavelength: {}'.format(wl))
-                    return wl
-
-            elif cmd[:3] == 'P04':  # Read base wavelength command
-                if self.verbose:
-                    print(
-                        'superlum: 1.3 Read / Set device parameter get base wavelength')
-
-                wl = float(int(resp[3:-1], 16))
-                if self.verbose:
-                    print('base wavelength is: {}'.format(wl))
-                self.bwl_wavelength = wl
-
+                print(f'current wavelength: {wl}')
                 return wl
 
-            elif cmd[0] == 'X':
-                if self.verbose:
-                    print('superlum: 1.4 Switch Output ON/OFF. Start / Stop Sweep.')
+        elif cmd[:3] == 'P04':  # Read base wavelength command
+            if self.verbose:
+                print(
+                    'superlum: 1.3 Read / Set device parameter get base wavelength')
 
-                f = re.match('^X\\S{5}\n$', resp)
-                if f is None:
-                    print('Could not parse response {}'.format(resp))
-                else:
-                    self.parse_state(status_string=resp[1:6])
-                    return 1
+            wl = float(int(resp[3:-1], 16))
+            if self.verbose:
+                print(f'base wavelength is: {wl}')
+            self.bwl_wavelength = wl
+
+            return wl
+
+        elif cmd[0] == 'X':
+            if self.verbose:
+                print('superlum: 1.4 Switch Output ON/OFF. Start / Stop Sweep.')
+
+            f = re.match('^X\\S{5}\n$', resp)
+            if f is None:
+                print(f'Could not parse response {resp}')
             else:
-                print('{} parsing not yet implemented'.format(cmd))
+                self.parse_state(status_string=resp[1:6])
+                return 1
+        else:
+            print(f'{cmd} parsing not yet implemented')
 
         return 0
 
@@ -176,8 +172,7 @@ class Superlum(Instrument, TunableLaser):
         Parses the status string and updates the relevant internal variables
         """
         if self.verbose:
-            print('Status string {}={}'.format(
-                status_string, bin(int(status_string, 16))))
+            print(f'Status string {status_string}={bin(int(status_string, 16))}')
 
         DSB = int(status_string[:2], 16)
         mode = int(DSB & 0b00000111)
@@ -190,14 +185,14 @@ class Superlum(Instrument, TunableLaser):
         if mode == 3:
             status = 'warm up'
             self.laser_rdy = False
-        elif mode == 4 or mode == 5:
+        elif mode in {4, 5}:
             status = 'function'
             self.laser_rdy = True
         elif mode > 5:
             status = 'error'
             self.laser_rdy = False
         if self.verbose:
-            print('superlum status: ' + status)
+            print(f'superlum status: {status}')
 
         status = 'local'
         if ctrl < 2:
@@ -205,7 +200,7 @@ class Superlum(Instrument, TunableLaser):
         elif ctrl < 4:
             status = 'USB'
         if self.verbose:
-            print('superlum control mode: ' + status)
+            print(f'superlum control mode: {status}')
 
         if func == 0:
             status = 'single tone'
@@ -214,16 +209,13 @@ class Superlum(Instrument, TunableLaser):
         elif ctrl < 4:
             status = 'continuous sweep'
         if self.verbose:
-            print('superlum sweep mode: ' + status)
+            print(f'superlum sweep mode: {status}')
 
         SS = int(status_string[2], 16)
 
-        if SS == 0:
-            status = 'stopped'
-        else:
-            status = 'started'
+        status = 'stopped' if SS == 0 else 'started'
         if self.verbose:
-            print('superlum sweep ' + status)
+            print(f'superlum sweep {status}')
 
         MSB = int(status_string[3:5], 16)
         if MSB & 0b00000001:
@@ -243,9 +235,8 @@ class Superlum(Instrument, TunableLaser):
             if self.verbose:
                 print('AOTF TEC NOT STABLE')
             self.aotf_tec_stable = False
-        if MSB & 0b00000100:
-            if self.verbose:
-                print('AOTF TEC thermistor error')
+        if MSB & 0b00000100 and self.verbose:
+            print('AOTF TEC thermistor error')
 
         if MSB & 0b00010000:
             if self.verbose:
@@ -265,9 +256,8 @@ class Superlum(Instrument, TunableLaser):
                 print('SLD TEC NOT STABLE')
             self.sld_tec_stable = False
 
-        if MSB & 0b00100000:
-            if self.verbose:
-                print('SLD TEC thermistor error')
+        if MSB & 0b00100000 and self.verbose:
+            print('SLD TEC thermistor error')
 
         if MSB & 0b01000000:
             # if self.verbose:
@@ -278,9 +268,8 @@ class Superlum(Instrument, TunableLaser):
             print('SLD laser output OFF')
             self.laser_on = False
 
-        if MSB & 0b10000000:
-            if self.verbose:
-                print('SLD current limit')
+        if MSB & 0b10000000 and self.verbose:
+            print('SLD current limit')
 
     def get_status(self):
         if self.laser_io is None:
@@ -310,7 +299,7 @@ class Superlum(Instrument, TunableLaser):
             print('W: Set ON mode (WAKE UP)')
             return 0
 
-        sendmsg = 'M' + mode + '\n'
+        sendmsg = f'M{mode}' + '\n'
         self.laser_io.write(sendmsg)
         self.laser_io.flush()
         return self.analyze_response(cmd=sendmsg, resp=self.read_response())
@@ -331,17 +320,16 @@ class Superlum(Instrument, TunableLaser):
 
         if wavelength < self.min_wavelength:
             print(
-                'Superlum: wavelength cannot be smaller than base wavelength {}nm'.format(
-                    self.min_wavelength))
+                f'Superlum: wavelength cannot be smaller than base wavelength {self.min_wavelength}nm'
+            )
+
             return 0
         elif wavelength > self.max_wavelength:
-            print(
-                'Superlum: wavelength cannot be larger than {}nm'.format(
-                    self.max_wavelength))
+            print(f'Superlum: wavelength cannot be larger than {self.max_wavelength}nm')
             return 0
 
         wlhex = '%04X' % int(round((wavelength - self.bwl_wavelength) * 100.0))
-        sendmsg = 'P21' + wlhex + '\n'
+        sendmsg = f'P21{wlhex}' + '\n'
         self.laser_io.write(sendmsg)
         self.laser_io.flush()
         return self.analyze_response(cmd=sendmsg, resp=self.read_response())

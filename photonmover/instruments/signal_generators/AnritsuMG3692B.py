@@ -56,11 +56,10 @@ class AnritsuMG3692B(Instrument, SignalGenerator):
         if not -20 <= power <= 30:
             raise ValueError(
                 'The input power setpoint is outside the instrument range (-20 to 30 dBm).')
-        else:
-            self.gpib.write('RF0')
-            self.gpib.write('LOG')
-            self.gpib.write('L1')
-            self.gpib.write('{:f} DM'.format(power))
+        self.gpib.write('RF0')
+        self.gpib.write('LOG')
+        self.gpib.write('L1')
+        self.gpib.write('{:f} DM'.format(power))
 
     def set_voltage(self, amplitude):
         """
@@ -76,10 +75,9 @@ class AnritsuMG3692B(Instrument, SignalGenerator):
         if not -20 <= amplitude <= maxvolt:
             raise ValueError(
                 'The supplied voltage amplitude outside the instrument range')
-        else:
-            self.gpib.write('RF0')
-            self.gpib.write('LIN')
-            self.gpib.write('{:f} VT'.format(amplitude))
+        self.gpib.write('RF0')
+        self.gpib.write('LIN')
+        self.gpib.write('{:f} VT'.format(amplitude))
 
     def set_frequency(self, freq):
         """

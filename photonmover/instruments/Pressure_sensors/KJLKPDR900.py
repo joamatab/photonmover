@@ -78,9 +78,7 @@ class KJLKPDR900(Instrument):
             pressure = float(pressure)
         except BaseException:
             pressure = 1e10
-            print(
-                'Error reading pressure: %s, %s' %
-                (pressure_data, pressure_data_prev))
+            print(f'Error reading pressure: {pressure_data}, {pressure_data_prev}')
 
         return pressure
 

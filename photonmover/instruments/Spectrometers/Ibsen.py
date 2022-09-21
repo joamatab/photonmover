@@ -24,11 +24,10 @@ def _check_visa_support(visa_rsrc):
         idn = visa_rsrc.query('*IDN?')
         if idn == "JETI_PIC_VERSA":
             return "Eagle"
-        else:
-            visa_rsrc.read_termination = rt0
-            visa_rsrc.write_termination = wt0
-            visa_rsrc.baud_rate = br0
-            return None
+        visa_rsrc.read_termination = rt0
+        visa_rsrc.write_termination = wt0
+        visa_rsrc.baud_rate = br0
+        return None
     except BaseException:
         visa_rsrc.read_termination = rt0
         visa_rsrc.write_termination = wt0
@@ -60,11 +59,9 @@ class Eagle(Instrument):
     def spectrum(self, t_int=10 * u.ms):
         self._rsrc.write(f'*MEAsure {int(t_int.to(u.ms).m)} 1 2')
         sleep(t_int.to(u.second).m + 0.05)
-        counts = np.array([int(val) for val in self._rsrc.read().split()[1:]])
-        return counts
+        return np.array([int(val) for val in self._rsrc.read().split()[1:]])
 
     def spectrum_raw(self, t_int=10 * u.ms):
         self._rsrc.write(f'*MEAsure {int(t_int.to(u.ms).m)} 1 2')
         sleep(t_int.to(u.second).m + 0.05)
-        counts_raw = self._rsrc.read_raw()
-        return counts_raw
+        return self._rsrc.read_raw()

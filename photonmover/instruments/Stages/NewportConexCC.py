@@ -41,10 +41,10 @@ class ConexCC(Instrument):
         self.driver = CommandInterfaceConexCC.ConexCC()
         ret = self.driver.OpenInstrument(self.com_port)
         if ret != 0:
-            print('Oops: error opening port %s' % self.com_port)
+            print(f'Oops: error opening port {self.com_port}')
             self.positioner_error = 'init failed'
         else:
-            print('ConexCC: Successfully connected to %s' % self.com_port)
+            print(f'ConexCC: Successfully connected to {self.com_port}')
             self.read_velocity()
             if self.velocity is not None:
                 self.set_velocity(self.velocity)
@@ -60,9 +60,9 @@ class ConexCC(Instrument):
         while not self.is_ready():
             count += 1
             if count % 30 == 0:
-                print('<%s>' % self.controller_state)
+                print(f'<{self.controller_state}>')
             else:
-                print('<%s>' % self.controller_state, end='', flush=True)
+                print(f'<{self.controller_state}>', end='', flush=True)
             sleep(sleep_interval)
             if count >= last_count:
                 print(
@@ -83,10 +83,11 @@ class ConexCC(Instrument):
             self.init_positioner()
             sleep(0.4)
 
-        # ('32','33','34') means in READY state
-        ready = self.positioner_error == '' and self.controller_state in (
-            '32', '33', '34')
-        return ready
+        return self.positioner_error == '' and self.controller_state in (
+            '32',
+            '33',
+            '34',
+        )
 
     @classmethod
     def dump_possible_states(cls):
@@ -256,16 +257,13 @@ if __name__ == '__main__':
     ConexCC.dump_possible_states()
     conex_cc = ConexCC(velocity=0.5)
     conex_cc.initialize()
-    ready = conex_cc.wait_for_ready(timeout=60)
-    if ready:
+    if ready := conex_cc.wait_for_ready(timeout=60):
         dist = input('Indicate absolute desired movement: ')
         conex_cc.move_absolute(dist)
-        ready = conex_cc.wait_for_ready(timeout=60)
-        if ready:
+        if ready := conex_cc.wait_for_ready(timeout=60):
             dist = input('Indicate relative desired movement: ')
             conex_cc.move_relative(dist)
-            ready = conex_cc.wait_for_ready(timeout=60)
-            if ready:
+            if ready := conex_cc.wait_for_ready(timeout=60):
                 print('ok!')
             else:
                 print('not ok 2!')

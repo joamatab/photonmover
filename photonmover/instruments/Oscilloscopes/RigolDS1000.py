@@ -104,7 +104,7 @@ class RigolDS1000(Instrument):
             print("Acquisition mode not supported. Doing nothing.")
             return
 
-        self.gpib.write(":ACQ:TYPE %s" % mode)
+        self.gpib.write(f":ACQ:TYPE {mode}")
 
     def set_bw(self, channel, bw):
         """
@@ -235,13 +235,13 @@ class RigolDS1000(Instrument):
             "NEDG",
             "PATT",
                 "DEL"]:
-            self.gpib.write(":TRIG:MODE %s" % mode)
+            self.gpib.write(f":TRIG:MODE {mode}")
 
         if coupling in ["AC", "DC", "LFR", "HFR"]:
-            self.gpib.write(":TRIG:COUP %s" % coupling)
+            self.gpib.write(f":TRIG:COUP {coupling}")
 
         if trig_number in ["AUTO", "NORM", "SING"]:
-            self.gpib.write(":TRIG:SWE %s" % trig_number)
+            self.gpib.write(f":TRIG:SWE {trig_number}")
 
         if channel in [1, 2, 3, 4]:
             self.gpib.write(":TRIG:%s:SOUR CHAN%d" % (mode, channel))
@@ -297,7 +297,7 @@ class RigolDS1000(Instrument):
             if file_name is not None:
 
                 # Create the csv file
-                file_name_chan = file_name + "_channel_" + str(c) + ".csv"
+                file_name_chan = f"{file_name}_channel_{str(c)}.csv"
 
                 with open(file_name_chan, 'w+') as csvfile:
                     writer = csv.writer(csvfile)

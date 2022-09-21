@@ -19,7 +19,7 @@ class MockMSA(MSA, Instrument):
         print("Reading MSA trace")
         f = np.linspace(50, 30e9, 201)
         data = f
-        return [f, data]
+        return [data, data]
 
     def take_data(self, num_averages):
         print("Taking MSA trace with %d averages" % num_averages)
@@ -28,4 +28,4 @@ class MockMSA(MSA, Instrument):
         print("Reading MSA trace")
         f = np.linspace(50, 30e9, 201)
         data = f
-        return [f, data]
+        return [data, data]

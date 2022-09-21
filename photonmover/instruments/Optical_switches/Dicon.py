@@ -52,13 +52,13 @@ class DiConOpticalSwitch(Instrument):
         self.ser.reset_input_buffer()
         self.ser.write(b'ID?\r')
         self.ser.read()  # dummy read the newline
-        print('Dicon switch id: %s' % self.ser.readline())
+        print(f'Dicon switch id: {self.ser.readline()}')
 
     def set_channel(self, new_channel):
         if new_channel >= 0 and new_channel <= self.channel_max:
             self.channel = new_channel
             self.ser.reset_input_buffer()
-            self.ser.write(bytes('I1 {}\r'.format(new_channel), 'utf-8'))
+            self.ser.write(bytes(f'I1 {new_channel}\r', 'utf-8'))
         else:
             print('DiConOpticalSwitch: Invalid channel. Doing nothing.')
 
@@ -73,10 +73,7 @@ class DiConOpticalSwitch(Instrument):
 
         # Parse response
         ch = re.match(r"\d+", resp.decode('utf-8'))
-        if ch is not None:
-            return int(ch[0])
-        else:
-            return -1
+        return int(ch[0]) if ch is not None else -1
 
     def park_switch(self):
         # Park switch

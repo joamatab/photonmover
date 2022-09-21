@@ -53,10 +53,7 @@ class PVModOutputCurve(Experiment):
                 else:
                     self.drain_smu = instr
 
-        if (self.gate_smu is not None) and (self.drain_smu is not None):
-            return True
-        else:
-            return False
+        return self.gate_smu is not None and self.drain_smu is not None
 
     def get_description(self):
         """
@@ -140,9 +137,7 @@ class PVModOutputCurve(Experiment):
         self.gate_smu.set_voltage(prev_gate_bias)
 
         # The plot data is given as [x vals, y vals1, y vals2,...]
-        all_data = [measurements[:, 0]]
-        all_data.extend(all_meas_data)
-
+        all_data = [measurements[:, 0], *all_meas_data]
         self.data = all_data
 
         return all_data

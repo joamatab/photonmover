@@ -113,20 +113,20 @@ class Experiment(QObject, ABC, metaclass=FinalMeta):
                     params[p] = self.default_params()[p]
                 else:
                     raise ValueError(
-                        'Param %s missing in list of provided parameter, and there is no default provided.' %
-                        p)
+                        f'Param {p} missing in list of provided parameter, and there is no default provided.'
+                    )
+
 
             # THIS IS EXPERIMENTAL. Is meant to handle parameters that are
             # dictionnaries. In this case, we might have specified some of
             # the keys but left some other unspecified. With this, we are
             # trying to fill this missing keys if they are specified in the
             # default params.
-            if isinstance(params[p], dict):
-                if p in self.default_params():
-                    def_params_dict = self.default_params()[p]
-                    for key in def_params_dict:
-                        if key not in params[p]:
-                            params[p][key] = def_params_dict[key]
+            if isinstance(params[p], dict) and p in self.default_params():
+                def_params_dict = self.default_params()[p]
+                for key in def_params_dict:
+                    if key not in params[p]:
+                        params[p][key] = def_params_dict[key]
 
         return params
 

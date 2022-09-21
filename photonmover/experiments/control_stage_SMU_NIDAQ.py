@@ -54,10 +54,7 @@ class AerotechControl(Experiment):
             if isinstance(instr, NiDAQ):
                 self.daq = instr
 
-        if (self.smu is not None) and (self.daq is not None):
-            return True
-        else:
-            return False
+        return self.smu is not None and self.daq is not None
 
     def get_description(self):
         """
@@ -106,16 +103,9 @@ class AerotechControl(Experiment):
         daq_channel = params["daq_channel"]
 
         if isinstance(bias_cur, list):
-            if dist > 0:
-                bias_cur = bias_cur[0]
-            else:
-                bias_cur = bias_cur[1]
+            bias_cur = bias_cur[0] if dist > 0 else bias_cur[1]
         else:
-            if dist < 0:
-                bias_cur = -1 * bias_cur
-            else:
-                bias_cur = bias_cur
-
+            bias_cur = -1 * bias_cur if dist < 0 else bias_cur
         # Set the current drive for the smu
         self.smu.set_current(bias_cur, turn_on=False)
 

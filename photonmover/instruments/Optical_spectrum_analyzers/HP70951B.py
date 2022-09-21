@@ -44,7 +44,7 @@ class HP70951B(MSA, Instrument):
             print('Specified units not valid. Doing nothing.')
             return
 
-        self.write('AUNITS %s;' % unit)
+        self.write(f'AUNITS {unit};')
 
     def automeasure(self):
         """
@@ -64,16 +64,16 @@ class HP70951B(MSA, Instrument):
         """
 
         if center is not None:
-            self.gpib.write('CENTERWL %s;' % center)
+            self.gpib.write(f'CENTERWL {center};')
 
         if span is not None:
-            self.gpib.write('SP %s;' % span)
+            self.gpib.write(f'SP {span};')
 
         if start_wl is not None:
-            self.gpib.write('STARTWL %s;' % start_wl)
+            self.gpib.write(f'STARTWL {start_wl};')
 
         if end_wl is not None:
-            self.gpib.write('STOPWL %s;' % end_wl)
+            self.gpib.write(f'STOPWL {end_wl};')
 
     def clear_display(self):
         self.write('CLRDSP;')
@@ -101,7 +101,7 @@ class HP70951B(MSA, Instrument):
             print('Specified operatio mode not valid. Doing nothing.')
             return
 
-        self.gpib.write('INSTMODE %s;' % mode)
+        self.gpib.write(f'INSTMODE {mode};')
 
     def instrument_preset(self):
         """
@@ -142,10 +142,10 @@ class HP70951B(MSA, Instrument):
         """
 
         if res_bw is not None:
-            self.gpib.write('RB %s;' % res_bw)
+            self.gpib.write(f'RB {res_bw};')
 
         if video_bw is not None:
-            self.gpib.write('VB %s;' % video_bw)
+            self.gpib.write(f'VB {video_bw};')
 
     def set_reference_level(self, ref_value, ref_pos):
         """
@@ -156,7 +156,7 @@ class HP70951B(MSA, Instrument):
         """
 
         if ref_value is not None:
-            self.gpib.write('RL %s;' % ref_value)
+            self.gpib.write(f'RL {ref_value};')
 
         if ref_pos is not None:
             self.gpib.write('RLPOS %d;' % ref_pos)
@@ -172,12 +172,12 @@ class HP70951B(MSA, Instrument):
         :param sweep_time: string with units (ex: '1S') or 'AUTO'
         :return:
         """
-        self.gpib.write('ST %s;' % sweep_time)
+        self.gpib.write(f'ST {sweep_time};')
 
     def read_data(self, trace='A', filename=None):
 
         # Get trace conditions
-        self.gpib.write("TRCOND TR%s?;" % trace)
+        self.gpib.write(f"TRCOND TR{trace}?;")
         conds = self.gpib.read_raw().decode('ascii')
         # separate by comma
         conds = conds.split(',')
@@ -186,13 +186,13 @@ class HP70951B(MSA, Instrument):
 
         # Get trace
         self.gpib.write('TS;DONE?;')
-        self.gpib.write('VIEW TR%s;' % trace)
+        self.gpib.write(f'VIEW TR{trace};')
 
         # print(self.gpib.query_ascii_values('DONE?;'))
         # while int(self.gpib.query_ascii_values('DONE?;')[0]) != 1:
         #    time.sleep(0.2)
 
-        amps = self.gpib.query_ascii_values("TR%s?;" % trace)
+        amps = self.gpib.query_ascii_values(f"TR{trace}?;")
 
         # while int(self.gpib.query_ascii_values('DONE?;')[0]) != 1:
         #    time.sleep(0.2)
@@ -207,7 +207,7 @@ class HP70951B(MSA, Instrument):
                 writer.writerow(wavs)
                 writer.writerow(amps)
 
-        self.gpib.write('CLRW TR%s;' % trace)
+        self.gpib.write(f'CLRW TR{trace};')
 
         return [wavs, amps]
 
@@ -254,7 +254,7 @@ class HP70951B(MSA, Instrument):
         """
         self.gpib.write('TS;DONE?;')
         self.gpib.write('MK;')  # position a marker
-        self.gpib.write('MKPK %s;' % peak_id)  # move the marker to the peak
+        self.gpib.write(f'MKPK {peak_id};')
 
         amp = self.gpib.query_ascii_values('MKA?;')
         wl = self.gpib.query_ascii_values('MKF?;')

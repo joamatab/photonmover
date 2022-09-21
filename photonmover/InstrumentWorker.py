@@ -90,11 +90,7 @@ class InstrumentWorker(QObject):
 
         pms = self._find_instr_type_(PowerMeter)
 
-        if set_range == 'AUTO':
-            power_range = set_range
-        else:
-            power_range = float(set_range)
-
+        power_range = set_range if set_range == 'AUTO' else float(set_range)
         for pm in pms:
             pm.set_range(channel=None, power_range=power_range)
 
@@ -182,17 +178,14 @@ class InstrumentWorker(QObject):
 
         self.visa_lock.lock()
 
-        # Measured wavelength
-        wav_meter = self._find_instr_type_(WlMeter)
-        if wav_meter:
+        if wav_meter := self._find_instr_type_(WlMeter):
             meas_wav = wav_meter[0].get_wavelength()
         else:
             meas_wav = "NA"
 
         # Ask the SMU if it is time
         if measure_smu:
-            smu = self._find_instr_type_(SourceMeter)
-            if smu:
+            if smu := self._find_instr_type_(SourceMeter):
                 if smu_mode == 'meas_volt':
                     smu_val = smu[0].measure_voltage()
                 elif smu_mode == 'meas_cur':
@@ -202,9 +195,7 @@ class InstrumentWorker(QObject):
         else:
             smu_val = None
 
-        # Power
-        pm = self._find_instr_type_(PowerMeter)
-        if pm:
+        if pm := self._find_instr_type_(PowerMeter):
             tap_power, rec_power = pm[0].get_powers()
 
         else:
@@ -222,16 +213,12 @@ class InstrumentWorker(QObject):
 
         self.visa_lock.lock()
 
-        # Measured wavelength
-        wav_meter = self._find_instr_type_(WlMeter)
-        if wav_meter:
+        if wav_meter := self._find_instr_type_(WlMeter):
             meas_wav = wav_meter[0].get_wavelength()
         else:
             meas_wav = "NA"
 
-        # Power measured with power meter
-        pm = self._find_instr_type_(PowerMeter)
-        if pm:
+        if pm := self._find_instr_type_(PowerMeter):
             power, _ = pm[0].get_powers()
 
         else:
@@ -252,10 +239,4 @@ class InstrumentWorker(QObject):
         Returns a list of the instruments with the specified category
         category is one of the instrument interfaces. Ex: Laser
         """
-        lst = []
-
-        for instr in self.instr_list:
-            if isinstance(instr, category):
-                lst.append(instr)
-
-        return lst
+        return [instr for instr in self.instr_list if isinstance(instr, category)]

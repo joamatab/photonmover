@@ -77,7 +77,7 @@ class Newport500B(Instrument, LaserDriver):
 
         md = 'I' if mode == 'constant_cur' else 'MDI'
 
-        self.gpib.write('LAS:MODE:%s' % md)
+        self.gpib.write(f'LAS:MODE:{md}')
         self.mode = mode
 
     def close(self):

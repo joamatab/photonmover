@@ -75,7 +75,7 @@ class KeysightB2902A(Instrument, SourceMeter):
         :param mode: Either VOLT or CURR
         :return:
         """
-        if not (mode == 'VOLT' or mode == 'CURR'):
+        if mode not in ['VOLT', 'CURR']:
             print('Source meter mode not correct. NO action taken')
             return
 
@@ -98,7 +98,7 @@ class KeysightB2902A(Instrument, SourceMeter):
         :param voltage:
         :return:
         """
-        if not (self.mode == 'VOLT'):
+        if self.mode != 'VOLT':
             self.turn_off()
             self.set_func('VOLT')
             time.sleep(0.1)
@@ -133,7 +133,7 @@ class KeysightB2902A(Instrument, SourceMeter):
         :param current:
         :return:
         """
-        if not (self.mode == 'CURR'):
+        if self.mode != 'CURR':
             self.turn_off()
             self.set_func('CURR')
             time.sleep(0.1)

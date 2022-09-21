@@ -64,7 +64,7 @@ def gen_grid(x_vec, y_vec):
     # ZIG ZAG VERSION ----------
     r, _ = xv.shape
 
-    coord_list = list()
+    coord_list = []
 
     for i in range(r):
         xs = xv[i, :]
@@ -73,9 +73,7 @@ def gen_grid(x_vec, y_vec):
         if i % 2 == 1:
             xs = np.flip(xs)
 
-        for (a, b) in zip(xs, ys):
-            coord_list.append((a, b))
-
+        coord_list.extend((a, b) for a, b in zip(xs, ys))
     return coord_list
 
 
@@ -163,13 +161,7 @@ class HoloMicroGraphy(Experiment):
         """
 
         for instr in instrument_list:
-            if isinstance(
-                instr,
-                SourceMeter) or isinstance(
-                instr,
-                DCPowerSource) or isinstance(
-                instr,
-                    LaserDriver):
+            if isinstance(instr, (SourceMeter, DCPowerSource, LaserDriver)):
                 if self.stage_smu is None:
                     self.stage_smu = instr
                 elif self.micro_smu is None:
@@ -189,16 +181,14 @@ class HoloMicroGraphy(Experiment):
                 elif self.holo_camera is None:
                     self.holo_camera = instr
 
-        if (
-            self.stage_smu is not None) and (
-            self.daq is not None) and (
-            self.micro_smu is not None) and (
-                self.holo_smu is not None) and (
-                    self.micro_camera is not None) and (
-                        self.holo_camera is not None):
-            return True
-        else:
-            return False
+        return (
+            self.stage_smu is not None
+            and self.daq is not None
+            and self.micro_smu is not None
+            and self.holo_smu is not None
+            and self.micro_camera is not None
+            and self.holo_camera is not None
+        )
 
     def get_description(self):
         """

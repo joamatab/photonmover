@@ -58,7 +58,7 @@ class KlingerCC1(Instrument, SingleAxisStage):
         N = round(N)
 
         if N > 0 and N < 65536:
-            self.gpib.write("N {}".format(N))
+            self.gpib.write(f"N {N}")
             time.sleep(0.1)
             self.gpib.write("+")
             time.sleep(0.1)
@@ -66,7 +66,7 @@ class KlingerCC1(Instrument, SingleAxisStage):
             time.sleep(0.1)
 
         elif N < 0 and N > -65536:
-            self.gpib.write("N {}".format(-N))
+            self.gpib.write(f"N {-N}")
             time.sleep(0.1)
             self.gpib.write("-")
             time.sleep(0.1)
@@ -91,21 +91,21 @@ class KlingerCC1(Instrument, SingleAxisStage):
     def set_steprate(self, R, S, F):
         # Step rate R (1~255) - larger is faster
         if R > 0 and R < 256:
-            self.gpib.write("R {}".format(R))
+            self.gpib.write(f"R {R}")
             time.sleep(0.1)
         else:
             print('Invalid step rate R')
 
         # Step rate acceleration parameter S(1~255) - larger is faster
         if S > 0 and S < 256:
-            self.gpib.write("S {}".format(S))
+            self.gpib.write(f"S {S}")
             time.sleep(0.1)
         else:
             print('Invalid step rate acceleration parameter S')
 
         # Step rate factor parameter F(1~255) - smaller is faster
         if F > 0 and F < 256:
-            self.gpib.write("F {}".format(F))
+            self.gpib.write(f"F {F}")
             time.sleep(0.1)
         else:
             print('Invalid step rate factor parameter F')

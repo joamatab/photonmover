@@ -150,9 +150,5 @@ class SantecTSL210F(Instrument, TunableLaser):
         2. The current power
         3. If the laser is on or off.
         """
-        if self.active_module >= 0:
-            state = 1
-        else:
-            state = 0
-
+        state = 1 if self.active_module >= 0 else 0
         return [self.wav, self.power, state]

@@ -57,10 +57,9 @@ class Agilent33201A(Instrument, WaveformGenerator):
             if freq > 15e6:
                 print('Specified frequency is too high. Setting to maximum.')
                 freq = 15e6
-        else:
-            if freq > 100e3:
-                print('Specified frequency is too high. Setting to maximum.')
-                freq = 100e3
+        elif freq > 100e3:
+            print('Specified frequency is too high. Setting to maximum.')
+            freq = 100e3
 
         if vpp > 20:
             print('Vpp too high. Setting to maximum.')
@@ -88,7 +87,7 @@ class Agilent33201A(Instrument, WaveformGenerator):
 
         self.shape = shape
 
-        self.gpib.write("FUNC:SHAP %s" % shape)
+        self.gpib.write(f"FUNC:SHAP {shape}")
 
     def set_frequency(self, freq):
         """
@@ -97,15 +96,14 @@ class Agilent33201A(Instrument, WaveformGenerator):
         :return:
         """
 
-        if self.shape in ["SIN", "SQU"]:
-            if freq > 15e6:
-                print('Specified frequency is too high. No change')
-                return
-        else:
-            if freq > 100e3:
-                print('Specified frequency is too high. No change')
-                return
-
+        if (
+            self.shape in ["SIN", "SQU"]
+            and freq > 15e6
+            or self.shape not in ["SIN", "SQU"]
+            and freq > 100e3
+        ):
+            print('Specified frequency is too high. No change')
+            return
         self.gpib.write("FREQ %.2E" % freq)
 
     def set_duty_cycle(self, duty_cycle):

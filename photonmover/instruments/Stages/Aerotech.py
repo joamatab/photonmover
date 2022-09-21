@@ -77,16 +77,9 @@ class AerotechStage(Instrument, SingleAxisStage):
         """
 
         if isinstance(self.bias_cur, list):
-            if dist > 0:
-                bias_set = self.bias_cur[0]
-            else:
-                bias_set = self.bias_cur[1]
+            bias_set = self.bias_cur[0] if dist > 0 else self.bias_cur[1]
         else:
-            if dist < 0:
-                bias_set = -1 * self.bias_cur
-            else:
-                bias_set = self.bias_cur
-
+            bias_set = -1 * self.bias_cur if dist < 0 else self.bias_cur
         # Set the current drive for the smu
         self.smu.set_current(bias_set, turn_on=False)
 

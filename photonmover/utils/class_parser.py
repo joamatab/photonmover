@@ -53,16 +53,15 @@ class ClassParser:
 
     def get_classes(self, filename):
         # Returns a list with all the classes defined in the specified filename
-        class_list = list()
+        class_list = []
         with open(filename, "r") as file_obj:
             text = file_obj.read()
             p = ast.parse(text)
             node = ast.NodeVisitor()
 
-            for node in ast.walk(p):
-                if isinstance(node, ast.ClassDef):
-                    class_name = node.name
-                    class_list.append(class_name)
+            class_list.extend(
+                node.name for node in ast.walk(p) if isinstance(node, ast.ClassDef)
+            )
 
         return class_list
 

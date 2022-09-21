@@ -83,7 +83,7 @@ class M2_Solstis(Instrument, TunableLaser):
                 print(
                     'M2_Solstis: failed to start link to to %s:%d as %s' %
                     (self.host_address, self.port, self.client_ip))
-                print('M2_Solstis: reply from controller {}'.format(json_reply))
+                print(f'M2_Solstis: reply from controller {json_reply}')
 
                 self.s.close()
                 self.s = None
@@ -149,11 +149,11 @@ class M2_Solstis(Instrument, TunableLaser):
             self.latest_reply = json_reply
             if json_reply['message']['transmission_id'] == [
                     transID] and json_reply['message']['parameters']['status'] == [0]:
-                print('M2_Solstis: started tuning to {}'.format(wavelength))
+                print(f'M2_Solstis: started tuning to {wavelength}')
                 return 0
             else:
                 print('M2_Solstis: command not sent')
-                print('M2_Solstis: reply from controller {}'.format(json_reply))
+                print(f'M2_Solstis: reply from controller {json_reply}')
                 return 1
 
     def get_wavelength(self):
@@ -184,8 +184,7 @@ class M2_Solstis(Instrument, TunableLaser):
             if (json_reply['message']['transmission_id'] == [transID]) and (
                     json_reply['message']['parameters']['status'] in [[0], [2], [3]]):
                 wavelength = json_reply['message']['parameters']['current_wavelength'][0]
-                print(
-                    'M2_Solstis: Current wavelength from wavemeter is {}'.format(wavelength))
+                print(f'M2_Solstis: Current wavelength from wavemeter is {wavelength}')
 
                 if json_reply['message']['parameters']['status'] == [0]:
                     print('M2_Solstis: idle: software inactive!')
@@ -196,13 +195,12 @@ class M2_Solstis(Instrument, TunableLaser):
                     self.poll_status = 2
 
                 elif json_reply['message']['parameters']['status'] == [3]:
-                    print(
-                        'M2_Solstis: maintaining target wavelength at {}'.format(wavelength))
+                    print(f'M2_Solstis: maintaining target wavelength at {wavelength}')
                     self.poll_status = 3
 
             else:
                 print('M2_Solstis: failed poll wavelength, no wavemeter')
-                print('M2_Solstis: reply from controller {}'.format(json_reply))
+                print(f'M2_Solstis: reply from controller {json_reply}')
                 self.poll_status = 1
 
                 wavelength = 0.0
@@ -224,29 +222,26 @@ class M2_Solstis(Instrument, TunableLaser):
             # print('M2_Solstis: socket not connected')
             return 9
 
-        else:
-
-            transID = 77
-            json_stopwave = {
-                'message': {
-                    'transmission_id': [transID],
-                    'op': 'stop_wave_m',
-                }
+        transID = 77
+        json_stopwave = {
+            'message': {
+                'transmission_id': [transID],
+                'op': 'stop_wave_m',
             }
+        }
 
-            self.s.sendall(bytes(json.dumps(json_stopwave), 'utf-8'))
-            # sleep(1.0)
-            json_reply = json.loads(self.s.recv(1024))
-            self.latest_reply = json_reply
+        self.s.sendall(bytes(json.dumps(json_stopwave), 'utf-8'))
+        # sleep(1.0)
+        json_reply = json.loads(self.s.recv(1024))
+        self.latest_reply = json_reply
 
-            if (json_reply['message']['transmission_id'] == [
+        if (json_reply['message']['transmission_id'] == [
                     transID]) and json_reply['message']['parameters']['status'] == [0]:
-                #wavelength = json_reply['message']['parameters']['current_wavelength'][0]
-                return 0
-            else:
-                print('M2_Solstis: failed connection to wavemeter')
-                print('M2_Solstis: reply from controller {}'.format(json_reply))
-                return 1
+            #wavelength = json_reply['message']['parameters']['current_wavelength'][0]
+            return 0
+        print('M2_Solstis: failed connection to wavemeter')
+        print(f'M2_Solstis: reply from controller {json_reply}')
+        return 1
 
     def lock(self, operation):
         """
@@ -262,35 +257,33 @@ class M2_Solstis(Instrument, TunableLaser):
             # print('M2_Solstis: socket not connected')
             return 9
 
-        else:
-            transID = 8
-            json_lockwave = {
-                'message': {
-                    'transmission_id': [transID],
-                    'op': 'lock_wave_m',
-                    'parameters': {
-                        'operation': operation
-                    }
+        transID = 8
+        json_lockwave = {
+            'message': {
+                'transmission_id': [transID],
+                'op': 'lock_wave_m',
+                'parameters': {
+                    'operation': operation
                 }
             }
+        }
 
-            self.s.sendall(bytes(json.dumps(json_lockwave), 'utf-8'))
+        self.s.sendall(bytes(json.dumps(json_lockwave), 'utf-8'))
 
-            json_reply = json.loads(self.s.recv(1024))
-            self.latest_reply = json_reply
+        json_reply = json.loads(self.s.recv(1024))
+        self.latest_reply = json_reply
 
-            if json_reply['message']['transmission_id'] == [
-                    transID] and json_reply['message']['parameters']['status'] == [0]:
+        if json_reply['message']['transmission_id'] != [transID] or json_reply[
+            'message'
+        ]['parameters']['status'] != [0]:
+            # print('M2_Solstis: failed connection to wavemeter')
+            # print('M2_Solstis: reply from controller {}'.format(json_reply))
 
-                print('M2_Solstis: lock or unlock wavelength successfull')
-                #wavelength = json_reply['message']['parameters']['current_wavelength'][0]
-                # print('M2_Solstis: Tuning stopped. Current wavelength from wavemeter is {}'.format(wavelength))
-                return 0
-            else:
-                # print('M2_Solstis: failed connection to wavemeter')
-                # print('M2_Solstis: reply from controller {}'.format(json_reply))
-
-                return 1
+            return 1
+        print('M2_Solstis: lock or unlock wavelength successfull')
+        #wavelength = json_reply['message']['parameters']['current_wavelength'][0]
+        # print('M2_Solstis: Tuning stopped. Current wavelength from wavemeter is {}'.format(wavelength))
+        return 0
 
     def one_shot(self):
         """
@@ -343,15 +336,15 @@ class M2_Solstis(Instrument, TunableLaser):
         status = -1  # initializing
 
         print('---------------------------------------------------')
-        print('Initializing laser poll status = {} \n '.format(status))
-        print('starting tuning to {} nm  '.format(wavelength))
+        print(f'Initializing laser poll status = {status} \n ')
+        print(f'starting tuning to {wavelength} nm  ')
 
         measured_wavelength = 0
 
         while status != 3:
 
             measured_wavelength = self.get_wavelength()  # getting actual wavelength read
-            print('wavelength from wavemeter is {} '.format(measured_wavelength))
+            print(f'wavelength from wavemeter is {measured_wavelength} ')
 
             if error_count > max_error_count:
                 print('Max Error count reached. Tuning failed ')
@@ -367,20 +360,19 @@ class M2_Solstis(Instrument, TunableLaser):
 
             if status == -1:    # just started
 
-                print('laser status is now {} \n'.format(status))
+                print(f'laser status is now {status} \n')
 
                 self.set_wavelength_no_tuning(wavelength)
 
-                print('M2_Solstis: setting wavelength to {} '.format(wavelength))
+                print(f'M2_Solstis: setting wavelength to {wavelength} ')
 
                 sleep(self.poll_timeout)
 
                 measured_wavelength = self.get_wavelength()  # measuring the current wavelength
-                print('current wavelength from wavemeter is now {} nm '.format(
-                    measured_wavelength))
+                print(f'current wavelength from wavemeter is now {measured_wavelength} nm ')
 
                 status = self.poll_status  # getting current laser tuning status
-                print('current laser status is now {} \n'.format(status))
+                print(f'current laser status is now {status} \n')
 
             elif status == 0:
 
@@ -413,11 +405,12 @@ class M2_Solstis(Instrument, TunableLaser):
             elif status == 2:
 
                 # tuning in process. do nothing. wait and poll status again
-                print('Status = 2, Tuning still in progress, waiting and trying to poll status again: # {} \n'.format(
-                    tuning_count))
-                tuning_count = tuning_count + 1
                 print(
-                    'M2_Solstis: Tuning laser wavelength. Try number {} \n'.format(tuning_count))
+                    f'Status = 2, Tuning still in progress, waiting and trying to poll status again: # {tuning_count} \n'
+                )
+
+                tuning_count = tuning_count + 1
+                print(f'M2_Solstis: Tuning laser wavelength. Try number {tuning_count} \n')
                 #print('M2_Solstis: Current wavelength from wavemeter is {}'.format(measured_wavelength))
 
                 sleep(self.poll_timeout)
@@ -427,13 +420,15 @@ class M2_Solstis(Instrument, TunableLaser):
         else:
             # status=3 laser is maintaining wavelength
 
-            print('laser status is now {} (ready to acquire) \n'.format(status))
+            print(f'laser status is now {status} (ready to acquire) \n')
             measured_wavelength = self.get_wavelength()  # measuring the current wavelength
-            print('M2_Solstis: maintaining target wavelength at {} and ready for data Collection.'.format(
-                measured_wavelength))
+            print(
+                f'M2_Solstis: maintaining target wavelength at {measured_wavelength} and ready for data Collection.'
+            )
+
             success = 1
             self.stop()
-            # laser.lock('on')
+                # laser.lock('on')
 
         return success, measured_wavelength
 

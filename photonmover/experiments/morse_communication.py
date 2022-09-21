@@ -67,14 +67,10 @@ class MorseComm(Experiment):
         """
 
         for instr in instrument_list:
-            if isinstance(instr, SourceMeter):
-                if self.smu is None:
-                    self.smu = instr
+            if isinstance(instr, SourceMeter) and self.smu is None:
+                self.smu = instr
 
-        if (self.smu is not None):
-            return True
-        else:
-            return False
+        return self.smu is not None
 
     def get_description(self):
         """
@@ -156,13 +152,12 @@ class MorseComm(Experiment):
 
             treated_sentence = treated_sentence + ch
 
-            if (i + 1) < len(sentence):
-                # Add a separator between letters (a ',') if the next character
-                # is a letter or a number
-                if sentence[i + 1].isalpha() or sentence[i + 1].isdigit():
-                    treated_sentence = treated_sentence + ","
+            if (i + 1) < len(sentence) and (
+                sentence[i + 1].isalpha() or sentence[i + 1].isdigit()
+            ):
+                treated_sentence = f"{treated_sentence},"
 
-        print('We will send: %s' % treated_sentence)
+        print(f'We will send: {treated_sentence}')
         return treated_sentence
 
     def transmit_char(self, ch, dot_T):
@@ -170,15 +165,15 @@ class MorseComm(Experiment):
         morse_seq = CODE[ch]
 
         for s in morse_seq:
-            if s == '.':
-                self.smu.turn_on()
-                time.sleep(dot_T)
-                self.smu.turn_off()
             if s == '-':
                 self.smu.turn_on()
                 time.sleep(3 * dot_T)
                 self.smu.turn_off()
 
+            elif s == '.':
+                self.smu.turn_on()
+                time.sleep(dot_T)
+                self.smu.turn_off()
             # Need to wait one time unit between elements of the same character
             time.sleep(dot_T)
 

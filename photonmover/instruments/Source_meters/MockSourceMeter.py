@@ -69,6 +69,4 @@ class MockSourceMeter(Instrument, SourceMeter):
         and the second is current
         """
         print('Performing IV measurement')
-        iv = np.zeros((num_v, 2), float)
-
-        return iv
+        return np.zeros((num_v, 2), float)

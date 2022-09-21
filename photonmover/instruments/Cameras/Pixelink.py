@@ -72,24 +72,24 @@ class Pixelink(Instrument, Camera):
             'raw_bgr24_non_dib',
             'raw_rgb48',
                 'raw_mono8']:
-            Exception('Specified image format %s not supported' % image_format)
+            Exception(f'Specified image format {image_format} not supported')
 
-        if image_format == 'jpeg':
-            self.image_format = PxLApi.ImageFormat.JPEG
-        elif image_format == 'bmp':
+        if image_format == 'bmp':
             self.image_format = PxLApi.ImageFormat.BMP
-        elif image_format == 'tiff':
-            self.image_format = PxLApi.ImageFormat.TIFF
+        elif image_format == 'jpeg':
+            self.image_format = PxLApi.ImageFormat.JPEG
         elif image_format == 'psd':
             self.image_format = PxLApi.ImageFormat.PSD
         elif image_format == 'raw_bgr24':
             self.image_format = PxLApi.ImageFormat.RAW_BGR24
         elif image_format == 'raw_bgr24_non_dib':
             self.image_format = PxLApi.ImageFormat.RAW_BGR24_NON_DIB
-        elif image_format == 'raw_rgb48':
-            self.image_format = PxLApi.ImageFormat.RAW_RGB48
         elif image_format == 'raw_mono8':
             self.image_format = PxLApi.ImageFormat.RAW_MONO8
+        elif image_format == 'raw_rgb48':
+            self.image_format = PxLApi.ImageFormat.RAW_RGB48
+        elif image_format == 'tiff':
+            self.image_format = PxLApi.ImageFormat.TIFF
 
     def list_cameras(self):
 
@@ -103,8 +103,7 @@ class Pixelink(Instrument, Camera):
             print("Found %d Cameras:" % len(cameras))
             for i in range(len(cameras)):
                 print("  Serial number - %d" % cameras[i].CameraSerialNum)
-            else:
-                print("getNumberCameras return code: %d" % ret[0])
+            print("getNumberCameras return code: %d" % ret[0])
 
         return len(cameras)
 
@@ -147,7 +146,7 @@ class Pixelink(Instrument, Camera):
 
         # We can calulate the number of pixels now.
         numPixels = (roiWidth / pixelAddressingValueX) * \
-            (roiHeight / pixelAddressingValueY)
+                (roiHeight / pixelAddressingValueY)
         ret = PxLApi.getFeature(
             self.camera_handle,
             PxLApi.FeatureId.PIXEL_FORMAT)
@@ -170,13 +169,13 @@ class Pixelink(Instrument, Camera):
         # camera
         raw_image_size = self.determine_raw_image_size()
 
-        if 0 == raw_image_size:
+        if raw_image_size == 0:
             Exception('Could not get a frame from Pixelink')
 
         # Create a buffer to hold the raw image
         raw_image = create_string_buffer(raw_image_size)
 
-        if 0 != len(raw_image):
+        if len(raw_image) != 0:
             # Capture a raw image. The raw image buffer will contain image data
             # on success.
             ret = self.get_raw_image(raw_image)
@@ -205,17 +204,11 @@ class Pixelink(Instrument, Camera):
         Returns SUCCESS or FAILURE
         """
 
-        # Open a file for binary write
-        file = open(filename, "wb")
-        if None is file:
-            Exception('File %s could not be created' % filename)
-        numBytesWritten = file.write(formated_image)
-        file.close()
-
-        if numBytesWritten == len(formated_image):
-            return SUCCESS
-
-        return FAILURE
+        with open(filename, "wb") as file:
+            if None is file:
+                Exception(f'File {filename} could not be created')
+            numBytesWritten = file.write(formated_image)
+        return SUCCESS if numBytesWritten == len(formated_image) else FAILURE
 
     def get_raw_image(self, image_buffer):
         """
@@ -244,7 +237,7 @@ class Pixelink(Instrument, Camera):
         # For this sample app, we'll just retry a few times.
         ret = (PxLApi.ReturnCode.ApiUnknownError,)
 
-        for i in range(MAX_NUM_TRIES):
+        for _ in range(MAX_NUM_TRIES):
             ret = PxLApi.getNextFrame(self.camera_handle, image_buffer)
             if PxLApi.apiSuccess(ret[0]):
                 break

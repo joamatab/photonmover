@@ -57,12 +57,12 @@ class SweptSourceRaman(Experiment):
             if isinstance(instr, PowerMeter):
                 self.power_meter = instr
 
-        if (self.laser is not None) and (self.daq is not None) and (
-                self.optical_switch is not None) and (
-                    self.power_meter is not None):
-            return True
-        else:
-            return False
+        return (
+            self.laser is not None
+            and self.daq is not None
+            and self.optical_switch is not None
+            and self.power_meter is not None
+        )
 
     def get_description(self):
         """
@@ -131,7 +131,7 @@ class SweptSourceRaman(Experiment):
                     # implement wavemeter
                     success = 0
 
-                num_trials = num_trials + 1
+                num_trials += 1
 
             if num_trials == MAX_NUM_WAV_SET_TRIALS:
                 print(
@@ -149,11 +149,11 @@ class SweptSourceRaman(Experiment):
             for channel in channels:
 
                 # time domain power monitoring
-                power_output_dic[channel] = list()
-                ni_output_dic[channel] = list()
-                spectra_dic[channel] = list()
-                spectra_norm_dic[channel] = list()
-                spectra_std_dic[channel] = list()
+                power_output_dic[channel] = []
+                ni_output_dic[channel] = []
+                spectra_dic[channel] = []
+                spectra_norm_dic[channel] = []
+                spectra_std_dic[channel] = []
 
                 self.optical_switch.set_channel(channel)
                 time.sleep(0.5)
@@ -162,7 +162,7 @@ class SweptSourceRaman(Experiment):
                     self.optical_switch.get_channel())
 
                 for n in range(1, num_reps + 1):
-                    print('Acquisition {} of {}'.format(n, num_reps))
+                    print(f'Acquisition {n} of {num_reps}')
 
                     buff_power = []
                     buff_ni = []

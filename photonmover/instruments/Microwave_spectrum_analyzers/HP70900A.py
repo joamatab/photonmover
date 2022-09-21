@@ -50,16 +50,16 @@ class HP70900A(MSA, Instrument):
         """
 
         if center is not None:
-            self.gpib.write('CF %s;' % center)
+            self.gpib.write(f'CF {center};')
 
         if span is not None:
-            self.gpib.write('SP %s;' % span)
+            self.gpib.write(f'SP {span};')
 
         if start_freq is not None:
-            self.gpib.write('FA %s;' % start_freq)
+            self.gpib.write(f'FA {start_freq};')
 
         if end_freq is not None:
-            self.gpib.write('FB %s;' % end_freq)
+            self.gpib.write(f'FB {end_freq};')
 
     def set_continuous_acq(self):
         """
@@ -77,10 +77,10 @@ class HP70900A(MSA, Instrument):
         """
 
         if res_bw is not None:
-            self.gpib.write('RB %s;' % res_bw)
+            self.gpib.write(f'RB {res_bw};')
 
         if video_bw is not None:
-            self.gpib.write('VB %s;' % video_bw)
+            self.gpib.write(f'VB {video_bw};')
 
     def instrument_preset(self):
         """
@@ -95,7 +95,7 @@ class HP70900A(MSA, Instrument):
         :param sweep_time: string with units (ex: '1S') or 'AUTO'
         :return:
         """
-        self.gpib.write('ST %s;' % sweep_time)
+        self.gpib.write(f'ST {sweep_time};')
 
     def set_reference_level(self, ref_value, ref_pos):
         """
@@ -106,7 +106,7 @@ class HP70900A(MSA, Instrument):
         """
 
         if ref_value is not None:
-            self.gpib.write('RL %s;' % ref_value)
+            self.gpib.write(f'RL {ref_value};')
 
         if ref_pos is not None:
             self.gpib.write('RLPOS %d;' % ref_pos)
@@ -122,7 +122,7 @@ class HP70900A(MSA, Instrument):
             print('Specified detection type not valid. Doing nothing.')
             return
 
-        self.gpib.write('DET %s;' % type)
+        self.gpib.write(f'DET {type};')
 
     def identify_signal(self, move_to_center=False, get_freq=True):
         """
@@ -161,7 +161,7 @@ class HP70900A(MSA, Instrument):
         """
         self.gpib.write('TS;DONE?;')
         self.gpib.write('MK;')  # position a marker
-        self.gpib.write('MKPK %s;' % peak_id)  # move the marker to the peak
+        self.gpib.write(f'MKPK {peak_id};')
 
         amp = self.gpib.query_ascii_values('MKA?;')
         freq = self.gpib.query_ascii_values('MKF?;')

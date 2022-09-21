@@ -84,10 +84,7 @@ class TXSweepT(Experiment):
             if isinstance(instr, SourceMeter):
                 self.smu = instr
 
-        if ((self.pm is not None)) and (self.T_controller is not None):
-            return True
-        else:
-            return False
+        return self.pm is not None and self.T_controller is not None
 
     def get_description(self):
         """
@@ -254,7 +251,7 @@ if __name__ == '__main__':
     # Ask for operation:
     close = False
 
-    while close is False:
+    while not close:
 
         next_op = input(
             "Enter operation (set [temp] - sweep [T0 T1 Tstep filename])"
@@ -262,7 +259,10 @@ if __name__ == '__main__':
         next_op = next_op.split()
         op = next_op[0]
 
-        if op == 'set':
+        if op == 'end':
+            close = True
+
+        elif op == 'set':
             try:
                 temp = float(next_op[1])
                 new_wav = exp.set_temp(temp)
@@ -275,16 +275,9 @@ if __name__ == '__main__':
             init_temp = float(next_op[1])
             end_temp = float(next_op[2])
             step_temp = float(next_op[3])
-            if len(next_op) == 5:
-                file_name = next_op[4]
-            else:
-                file_name = None
-
+            file_name = next_op[4] if len(next_op) == 5 else None
             ts = np.arange(init_temp, end_temp + 0.001, step_temp)
             exp.perform_experiment({"temperatures": ts}, filename=file_name)
-
-        elif op == 'end':
-            close = True
 
         else:
             print('Operation not recognized. Enter a valid command. ')

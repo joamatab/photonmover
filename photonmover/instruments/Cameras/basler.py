@@ -40,18 +40,18 @@ class Pylon(Instrument, Camera):
         image_format = image_format.lower()
 
         if image_format not in ['jpeg', 'bmp', 'tiff', 'png', 'raw']:
-            Exception('Specified image format %s not supported' % image_format)
+            Exception(f'Specified image format {image_format} not supported')
 
-        if image_format == 'jpeg':
-            self.image_format = pylon.ImageFileFormat_Jpeg
-        elif image_format == 'bmp':
+        if image_format == 'bmp':
             self.image_format = pylon.ImageFileFormat_Bmp
-        elif image_format == 'tiff':
-            self.image_format = pylon.ImageFileFormat_Tiff
+        elif image_format == 'jpeg':
+            self.image_format = pylon.ImageFileFormat_Jpeg
         elif image_format == 'png':
             self.image_format = pylon.ImageFileFormat_Png
         elif image_format == 'raw':
             self.image_format = pylon.ImageFileFormat_Raw
+        elif image_format == 'tiff':
+            self.image_format = pylon.ImageFileFormat_Tiff
 
     def close(self):
 

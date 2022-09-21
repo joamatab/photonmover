@@ -52,10 +52,7 @@ class LI_curve(Experiment):
             if isinstance(instr, SourceMeter):
                 self.sm = instr
 
-        if (self.pm is not None) and (self.sm is not None):
-            return True
-        else:
-            return False
+        return self.pm is not None and self.sm is not None
 
     def get_description(self):
         """

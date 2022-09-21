@@ -57,14 +57,12 @@ class TXSweep(Experiment):
         """
 
         for instr in instrument_list:
-            if isinstance(instr, TunableLaser):
-                # We need to account for the chance that the HPLightWave is not
-                # the laser
-                if isinstance(instr, HPLightWave):
-                    if instr.is_laser:
-                        self.laser = instr
-                else:
-                    self.laser = instr
+            if isinstance(instr, TunableLaser) and (
+                isinstance(instr, HPLightWave)
+                and instr.is_laser
+                or not isinstance(instr, HPLightWave)
+            ):
+                self.laser = instr
             if isinstance(instr, PowerMeter):
                 self.pm = instr
             if isinstance(instr, NiDAQ):
@@ -74,11 +72,9 @@ class TXSweep(Experiment):
             if isinstance(instr, SourceMeter):
                 self.smu = instr
 
-        if ((self.pm is not None) or (self.daq is not None)) and (
-                self.laser is not None):
-            return True
-        else:
-            return False
+        return (
+            ((self.pm is not None) or (self.daq is not None))
+        ) and self.laser is not None
 
     def get_description(self):
         """
@@ -128,15 +124,10 @@ class TXSweep(Experiment):
                 print('Tx measurent with MPM200')
                 meas = self.perform_tx_measurement_MPM200(
                     wavs, calibrate, rec_splitter_ratio, filename)
-            elif isinstance(self.laser, HPLightWave):
-                print('Tx measurent with HPLightwave')
-                meas = self.perform_tx_measurement_mainframe(
-                    wavs, calibrate, meas_current, rec_splitter_ratio, filename)
             else:
                 print('Tx measurent with HPLightwave')
                 meas = self.perform_tx_measurement_mainframe(
                     wavs, calibrate, meas_current, rec_splitter_ratio, filename)
-
         self.data = meas
 
         return meas
@@ -268,10 +259,8 @@ class TXSweep(Experiment):
             _, measured_received_power = self.pm.get_powers()
             meas_power_dBm = 10 * np.log10(measured_received_power * 1e3)
             power_range = np.ceil(meas_power_dBm / 10) * 10
-            self.pm.set_range(self.pm.rec_channel, power_range)
+        self.pm.set_range(self.pm.rec_channel, power_range)
 
-        else:
-            self.pm.set_range(self.pm.rec_channel, power_range)
         # 0 dBm power range will work for the tap channel
         self.pm.set_range(self.pm.tap_channel, 0)
 
@@ -293,7 +282,7 @@ class TXSweep(Experiment):
 
             # power in W
             measured_received_power = daq_data[0][i] * \
-                np.power(10, (power_range / 10)) * 1e-3
+                    np.power(10, (power_range / 10)) * 1e-3
             tap_power = daq_data[1][i] * np.power(10, (0 / 10)) * 1e-3
 
             through_loss, measured_input_power = analyze_powers(
@@ -354,12 +343,7 @@ class TXSweep(Experiment):
         end_wav = wavs[-1]
         num_wav = len(wavs) + 1
 
-        if (end_wav - init_wav) > 20:
-            wav_speed = 15
-        # elif (end_wav-init_wav)/num_wav < 0.005:
-        #    wav_speed = 0.5
-        else:
-            wav_speed = 1
+        wav_speed = 15 if (end_wav - init_wav) > 20 else 1
         # wav_speed = np.min([15, np.max([num_wav*0.1e-3,
         # (end_wav-init_wav)/15])])  # speed in nm/s
 
@@ -523,14 +507,12 @@ class TXBiasVSweep(Experiment):
         """
 
         for instr in instrument_list:
-            if isinstance(instr, TunableLaser):
-                # We need to account for the chance that the HPLightWave is not
-                # the laser
-                if isinstance(instr, HPLightWave):
-                    if instr.is_laser:
-                        self.laser = instr
-                else:
-                    self.laser = instr
+            if isinstance(instr, TunableLaser) and (
+                isinstance(instr, HPLightWave)
+                and instr.is_laser
+                or not isinstance(instr, HPLightWave)
+            ):
+                self.laser = instr
             if isinstance(instr, PowerMeter):
                 self.pm = instr
             if isinstance(instr, SourceMeter):
@@ -540,11 +522,11 @@ class TXBiasVSweep(Experiment):
             if isinstance(instr, WlMeter):
                 self.wav_meter = instr
 
-        if ((self.pm is not None) or (self.daq is not None)) and (
-                self.laser is not None) and (self.smu is not None):
-            return True
-        else:
-            return False
+        return (
+            (((self.pm is not None) or (self.daq is not None)))
+            and self.laser is not None
+            and self.smu is not None
+        )
 
     def get_description(self):
         """
@@ -630,9 +612,7 @@ class TXBiasVSweep(Experiment):
             self.laser.turn_off()
 
         # The plot data is given as [x vals, y vals1, y vals2,...]
-        all_plt_data = [measurement[:, 3]]
-        all_plt_data.extend(all_meas_data)
-
+        all_plt_data = [measurement[:, 3], *all_meas_data]
         self.data = all_plt_data
 
         return all_plt_data
@@ -712,14 +692,12 @@ class TXBiasISweep(Experiment):
         """
 
         for instr in instrument_list:
-            if isinstance(instr, TunableLaser):
-                # We need to account for the chance that the HPLightWave is not
-                # the laser
-                if isinstance(instr, HPLightWave):
-                    if instr.is_laser:
-                        self.laser = instr
-                else:
-                    self.laser = instr
+            if isinstance(instr, TunableLaser) and (
+                isinstance(instr, HPLightWave)
+                and instr.is_laser
+                or not isinstance(instr, HPLightWave)
+            ):
+                self.laser = instr
             if isinstance(instr, PowerMeter):
                 self.pm = instr
             if isinstance(instr, SourceMeter):
@@ -729,11 +707,11 @@ class TXBiasISweep(Experiment):
             if isinstance(instr, WlMeter):
                 self.wav_meter = instr
 
-        if ((self.pm is not None) or (self.daq is not None)) and (
-                self.laser is not None) and (self.smu is not None):
-            return True
-        else:
-            return False
+        return (
+            (((self.pm is not None) or (self.daq is not None)))
+            and self.laser is not None
+            and self.smu is not None
+        )
 
     def get_description(self):
         """
@@ -817,9 +795,7 @@ class TXBiasISweep(Experiment):
             self.laser.turn_off()
 
         # The plot data is given as [x vals, y vals1, y vals2,...]
-        all_plt_data = [measurement[:, 3]]
-        all_plt_data.extend(all_meas_data)
-
+        all_plt_data = [measurement[:, 3], *all_meas_data]
         self.data = all_plt_data
 
         return all_plt_data
@@ -898,14 +874,12 @@ class TXPowerSweep(Experiment):
         """
 
         for instr in instrument_list:
-            if isinstance(instr, TunableLaser):
-                # We need to account for the chance that the HPLightWave is not
-                # the laser
-                if isinstance(instr, HPLightWave):
-                    if instr.is_laser:
-                        self.laser = instr
-                else:
-                    self.laser = instr
+            if isinstance(instr, TunableLaser) and (
+                isinstance(instr, HPLightWave)
+                and instr.is_laser
+                or not isinstance(instr, HPLightWave)
+            ):
+                self.laser = instr
             if isinstance(instr, PowerMeter):
                 self.pm = instr
             if isinstance(instr, SourceMeter):
@@ -915,11 +889,9 @@ class TXPowerSweep(Experiment):
             if isinstance(instr, WlMeter):
                 self.wav_meter = instr
 
-        if ((self.pm is not None) or (self.daq is not None)) and (
-                self.laser is not None):
-            return True
-        else:
-            return False
+        return (
+            ((self.pm is not None) or (self.daq is not None))
+        ) and self.laser is not None
 
     def get_description(self):
         """
@@ -1001,9 +973,7 @@ class TXPowerSweep(Experiment):
             self.laser.turn_off()
 
         # The plot data is given as [x vals, y vals1, y vals2,...]
-        all_plt_data = [measurement[:, 3]]
-        all_plt_data.extend(all_meas_data)
-
+        all_plt_data = [measurement[:, 3], *all_meas_data]
         self.data = all_plt_data
 
         return all_plt_data
@@ -1090,14 +1060,12 @@ class TXDoubleBiasVSweep(Experiment):
         """
 
         for instr in instrument_list:
-            if isinstance(instr, TunableLaser):
-                # We need to account for the chance that the HPLightWave is not
-                # the laser
-                if isinstance(instr, HPLightWave):
-                    if instr.is_laser:
-                        self.laser = instr
-                else:
-                    self.laser = instr
+            if isinstance(instr, TunableLaser) and (
+                isinstance(instr, HPLightWave)
+                and instr.is_laser
+                or not isinstance(instr, HPLightWave)
+            ):
+                self.laser = instr
             if isinstance(instr, PowerMeter):
                 self.pm = instr
             if isinstance(instr, SourceMeter):
@@ -1110,11 +1078,12 @@ class TXDoubleBiasVSweep(Experiment):
             if isinstance(instr, WlMeter):
                 self.wav_meter = instr
 
-        if ((self.pm is not None) or (self.daq is not None)) and (
-                self.laser is not None) and (self.smu1 is not None) and (self.smu2 is not None):
-            return True
-        else:
-            return False
+        return (
+            (((self.pm is not None) or (self.daq is not None)))
+            and self.laser is not None
+            and self.smu1 is not None
+            and self.smu2 is not None
+        )
 
     def get_description(self):
         """
@@ -1197,7 +1166,7 @@ class TXDoubleBiasVSweep(Experiment):
                     if filename is not None:
                         time_tuple = time.localtime()
                         filename_comp = "%s-TxvsV2-V1=%d%s-V2=%d%s-Imeas1=%.2eA-Imeas2=%.2eA-%.2fnm-%d-%.2fnm" \
-                                        "--%d#%d#%d--%d#%d#%d.mat" % (filename,
+                                            "--%d#%d#%d--%d#%d#%d.mat" % (filename,
                                                                       1000 * v_set1,
                                                                       "mV",
                                                                       1000 * v_set2,
@@ -1248,7 +1217,7 @@ class TXDoubleBiasVSweep(Experiment):
                 if filename is not None:
                     time_tuple = time.localtime()
                     filename_comp = "%s-TxvsV2-V1=%d%s-V2=%d%s-Imeas1=%.2eA-Imeas2=%.2eA-%.2fnm-%d-%.2fnm" \
-                                    "--%d#%d#%d--%d#%d#%d.mat" % (filename,
+                                        "--%d#%d#%d--%d#%d#%d.mat" % (filename,
                                                                   1000 * v_set1,
                                                                   "mV",
                                                                   1000 * v_set2,
@@ -1278,9 +1247,7 @@ class TXDoubleBiasVSweep(Experiment):
             self.laser.turn_off()
 
         # The plot data is given as [x vals, y vals1, y vals2,...]
-        all_plt_data = [measurement[:, 3]]
-        all_plt_data.extend(all_meas_data)
-
+        all_plt_data = [measurement[:, 3], *all_meas_data]
         self.data = all_plt_data
 
         return all_plt_data

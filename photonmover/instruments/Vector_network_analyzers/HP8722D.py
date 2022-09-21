@@ -25,7 +25,7 @@ class HP8722D(VNA, Instrument):
 
     def initialize(self):
         print('Opening connnection to HP VNA')
-        print('GPIB address is {}'.format(self.gpib_address))
+        print(f'GPIB address is {self.gpib_address}')
         rm = visa.ResourceManager()
         try:
             self.gpib = rm.open_resource(
@@ -82,10 +82,10 @@ class HP8722D(VNA, Instrument):
 
         # Set the sweep type
         if sweeptype is not None:
-            self.gpib.write('%s;' % sweeptype)
+            self.gpib.write(f'{sweeptype};')
 
         if meastype is not None:
-            self.gpib.write('%s;' % meastype)
+            self.gpib.write(f'{meastype};')
 
     def set_freq_axis(
             self,
@@ -106,23 +106,23 @@ class HP8722D(VNA, Instrument):
         giga = 1e9
 
         if center is not None:
-            self.gpib.write('CENT {};'.format(center * giga))
+            self.gpib.write(f'CENT {center * giga};')
 
         if span is not None:
-            self.gpib.write('SPAN {};'.format(span * giga))
+            self.gpib.write(f'SPAN {span * giga};')
 
         if start_freq is not None:
-            self.gpib.write('STAR {};'.format(start_freq * giga))
+            self.gpib.write(f'STAR {start_freq * giga};')
 
         if end_freq is not None:
-            self.gpib.write('STOP {};'.format(end_freq * giga))
+            self.gpib.write(f'STOP {end_freq * giga};')
 
-        num_points_options = set([201, 401, 801, 1601])
         if num_points is not None:
-            if not set([num_points]).issubset(num_points_options):
+            num_points_options = {201, 401, 801, 1601}
+            if not {num_points}.issubset(num_points_options):
                 raise ValueError(
                     'num_points input must be one of: 201, 401, 801, 1601')
-            self.gpib.write('POIN {};'.format(num_points))
+            self.gpib.write(f'POIN {num_points};')
 
     def set_trigger(self, mode='continuous', num_count=None):
         """
@@ -210,8 +210,8 @@ class HP8722D(VNA, Instrument):
         self.gpib.write('OUTPLIML;')
         fr = self.gpib.read_raw().decode('ascii')
         fr = fr.replace('\n', ',').replace(' ', '').split(",")
-        fr = fr[0:-4]
-        fr = [float(i) for i in fr[0::4]]
+        fr = fr[:-4]
+        fr = [float(i) for i in fr[::4]]
 
         if plot_data:
             plt.plot(fr, data)
@@ -294,15 +294,6 @@ class HP8722D(VNA, Instrument):
         elif rangetype.lower() == 'all':
             raise ValueError(
                 " 'all' method currently causes VNA to freeze. Don't use it.")
-            #  10 May 2021: Despite having hard copied this from old code of Marc's, it's not working as-is.
-            # I get a message "waiting for clean sweep" on the VNA screen, but
-            # it never happens.
-            self.gpib.write('OUTPLIML;')
-            fr = self.gpib.read_raw().decode('ascii')
-            fr = fr.replace('\n', ',').replace(' ', '').split(",")
-            fr = fr[0:-4]
-            fr = [float(i) for i in fr[0::4]]
-
         return fr
 
     def _get_data(self):
@@ -311,8 +302,8 @@ class HP8722D(VNA, Instrument):
         """
         self.gpib.write('OUTPFORM;')
         data = self.gpib.read_raw().decode('ascii')
-        data = data.replace('\n', ',').replace(' ', '').split(",")[0:-2]
-        data = [float(i) for i in data[0::2]]
+        data = data.replace('\n', ',').replace(' ', '').split(",")[:-2]
+        data = [float(i) for i in data[::2]]
 
         return data
 

@@ -47,7 +47,7 @@ class BristolWlMeter(Instrument, WlMeter):
         wmeter_close_success = self.bristoldll.CLCloseDevice(
             self.bristol_handle)
 
-        if not wmeter_close_success == 0:
+        if wmeter_close_success != 0:
             print("ERROR CLOSING BRISTOL WAVELENGTH METER DEVICE")
 
     def get_wavelength(self):
@@ -56,12 +56,11 @@ class BristolWlMeter(Instrument, WlMeter):
         :return:
         """
 
-        if self.bristol_get_wave:
-            measured_wavelength = self.bristol_get_wave(self.bristol_handle)
-        else:
-            measured_wavelength = -1
-
-        return measured_wavelength
+        return (
+            self.bristol_get_wave(self.bristol_handle)
+            if self.bristol_get_wave
+            else -1
+        )
 
     def get_power(self):
         """
@@ -69,9 +68,8 @@ class BristolWlMeter(Instrument, WlMeter):
         :return:
         """
 
-        if self.bristol_get_power:
-            measured_power = self.bristol_get_power(self.bristol_handle)
-        else:
-            measured_power = -1
-
-        return measured_power
+        return (
+            self.bristol_get_power(self.bristol_handle)
+            if self.bristol_get_power
+            else -1
+        )

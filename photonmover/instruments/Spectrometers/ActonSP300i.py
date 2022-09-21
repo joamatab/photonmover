@@ -82,11 +82,11 @@ class ActonSP300i(Instrument):
             print('Specified mirror position is not supported. DOing nothing.')
             return
 
-        message = '%s' % pos
+        message = f'{pos}'
         self.ser.write(message.encode('ascii'))
         self.ser.flush()
         print(self.ser.read())
-        print("Setting spectrometer mirror to %s" % pos)
+        print(f"Setting spectrometer mirror to {pos}")
 
 
 if __name__ == '__main__':

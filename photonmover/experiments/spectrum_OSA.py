@@ -56,10 +56,7 @@ class spectrum_OSA_camera(Experiment):
             if isinstance(instr, HP70951B):
                 self.osa = instr
 
-        if (self.osa is not None) and (self.camera is not None):
-            return True
-        else:
-            return False
+        return self.osa is not None and self.camera is not None
 
     def get_description(self):
         """
@@ -167,10 +164,7 @@ class spectrum_OSA_DAQ(Experiment):
             if isinstance(instr, HP70951B):
                 self.osa = instr
 
-        if (self.osa is not None) and (self.daq is not None):
-            return True
-        else:
-            return False
+        return self.osa is not None and self.daq is not None
 
     def get_description(self):
         """
@@ -275,8 +269,7 @@ class spectrum_OSA_DAQ(Experiment):
         # Beep when done
         winsound.Beep(2000, 1000)  # frequency, duration
 
-        all_plt_data = [measurements[:, 0]]
-        all_plt_data.extend(all_meas_data)
+        all_plt_data = [measurements[:, 0], *all_meas_data]
         self.data = all_plt_data
 
         return None
@@ -354,10 +347,7 @@ class spectrum_OSA_powermeter(Experiment):
             if isinstance(instr, HP70951B):
                 self.osa = instr
 
-        if (self.osa is not None) and (self.power_meter is not None):
-            return True
-        else:
-            return False
+        return self.osa is not None and self.power_meter is not None
 
     def get_description(self):
         """
@@ -450,8 +440,7 @@ class spectrum_OSA_powermeter(Experiment):
         # Beep when done
         winsound.Beep(2000, 1000)  # frequency, duration
 
-        all_plt_data = [measurements[:, 0]]
-        all_plt_data.extend(all_meas_data)
+        all_plt_data = [measurements[:, 0], *all_meas_data]
         self.data = all_plt_data
 
         return None

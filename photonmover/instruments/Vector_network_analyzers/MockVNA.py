@@ -19,7 +19,7 @@ class MockVNA(VNA, Instrument):
         print("Reading VNA trace")
         f = np.linspace(50e6, 40e9, 201)
         data = f
-        return [f, data]
+        return [data, data]
 
     def take_data(self, num_averages):
         print("Taking VNA trace with %d averages" % num_averages)
@@ -28,4 +28,4 @@ class MockVNA(VNA, Instrument):
         print("Reading VNA trace")
         f = np.linspace(50e6, 40e9, 201)
         data = f
-        return [f, data]
+        return [data, data]

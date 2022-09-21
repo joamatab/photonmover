@@ -277,10 +277,10 @@ class ZWO(Instrument, Camera):
 
     def list_cameras(self):
         """Retrieves model names of all connected ZWO ASI cameras. Type :class:`list` of :class:`str`."""
-        r = []
-        for id_ in range(self.get_num_cameras()):
-            r.append(self.get_camera_property(id_)['Name'])
-        return r
+        return [
+            self.get_camera_property(id_)['Name']
+            for id_ in range(self.get_num_cameras())
+        ]
 
     def connect(self):
 
@@ -293,12 +293,12 @@ class ZWO(Instrument, Camera):
             found = False
             for n in range(self.get_num_cameras()):
                 model = self.get_camera_property(n)['Name']
-                if model in (self.camera_id, 'ZWO ' + self.camera_id):
+                if model in (self.camera_id, f'ZWO {self.camera_id}'):
                     found = True
                     self.camera_id = n
                     break
             if not found:
-                raise ValueError('Could not find camera model %s' % id_)
+                raise ValueError(f'Could not find camera model {id_}')
 
         else:
             raise TypeError('Unknown type for id')
@@ -313,7 +313,7 @@ class ZWO(Instrument, Camera):
         except Exception:
             self.closed = True
             self.close_camera()
-            print('could not open camera ' + str(self.camera_id))
+            print(f'could not open camera {str(self.camera_id)}')
 
     def get_camera_property(self, id=None):
         prop = _ASI_CAMERA_INFO()
@@ -326,50 +326,47 @@ class ZWO(Instrument, Camera):
         return prop.get_dict()
 
     def open_camera(self):
-        r = self.zwo_dll.ASIOpenCamera(self.camera_id)
-        if r:
+        if r := self.zwo_dll.ASIOpenCamera(self.camera_id):
             raise zwo_errors[r]
         return
 
     def init_camera(self):
-        r = self.zwo_dll.ASIInitCamera(self.camera_id)
-        if r:
+        if r := self.zwo_dll.ASIInitCamera(self.camera_id):
             raise zwo_errors[r]
         return
 
     def close_camera(self):
-        r = self.zwo_dll.ASICloseCamera(self.camera_id)
-        if r:
+        if r := self.zwo_dll.ASICloseCamera(self.camera_id):
             raise zwo_errors[r]
         return
 
     def get_num_controls(self):
         num = c.c_int()
-        r = self.zwo_dll.ASIGetNumOfControls(self.camera_id, num)
-        if r:
+        if r := self.zwo_dll.ASIGetNumOfControls(self.camera_id, num):
             raise zwo_errors[r]
         return num.value
 
     def get_control_caps(self, control_index):
         caps = _ASI_CONTROL_CAPS()
-        r = self.zwo_dll.ASIGetControlCaps(self.camera_id, control_index, caps)
-        if r:
+        if r := self.zwo_dll.ASIGetControlCaps(
+            self.camera_id, control_index, caps
+        ):
             raise zwo_errors[r]
         return caps.get_dict()
 
     def get_control_value(self, control_type):
         value = c.c_long()
         auto = c.c_int()
-        r = self.zwo_dll.ASIGetControlValue(
-            self.camera_id, control_type, value, auto)
-        if r:
+        if r := self.zwo_dll.ASIGetControlValue(
+            self.camera_id, control_type, value, auto
+        ):
             raise zwo_errors[r]
         return [value.value, bool(auto.value)]
 
     def set_control_value(self, control_type, value, auto=ASI_FALSE):
-        r = self.zwo_dll.ASISetControlValue(
-            self.camera_id, control_type, value, auto)
-        if r:
+        if r := self.zwo_dll.ASISetControlValue(
+            self.camera_id, control_type, value, auto
+        ):
             raise zwo_errors[r]
         return
 
@@ -378,9 +375,9 @@ class ZWO(Instrument, Camera):
         roi_height = c.c_int()
         bins = c.c_int()
         image_type = c.c_int()
-        r = self.zwo_dll.ASIGetROIFormat(
-            self.camera_id, roi_width, roi_height, bins, image_type)
-        if r:
+        if r := self.zwo_dll.ASIGetROIFormat(
+            self.camera_id, roi_width, roi_height, bins, image_type
+        ):
             raise zwo_errors[r]
         return [
             roi_width.value,
@@ -412,17 +409,16 @@ class ZWO(Instrument, Camera):
             raise ValueError(
                 'ROI width * height must be multiple of 1024 for ' +
                 cam_info['Name'])
-        r = self.zwo_dll.ASISetROIFormat(
-            self.camera_id, width, height, bins, image_type)
-        if r:
+        if r := self.zwo_dll.ASISetROIFormat(
+            self.camera_id, width, height, bins, image_type
+        ):
             raise zwo_errors[r]
         return
 
     def get_start_position(self):
         start_x = c.c_int()
         start_y = c.c_int()
-        r = self.zwo_dll.ASIGetStartPos(self.camera_id, start_x, start_y)
-        if r:
+        if r := self.zwo_dll.ASIGetStartPos(self.camera_id, start_x, start_y):
             raise zwo_errors[r]
         return [start_x.value, start_y.value]
 
@@ -432,42 +428,36 @@ class ZWO(Instrument, Camera):
         if start_y < 0:
             raise ValueError('Y start position too small')
 
-        r = self.zwo_dll.ASISetStartPos(self.camera_id, start_x, start_y)
-        if r:
+        if r := self.zwo_dll.ASISetStartPos(self.camera_id, start_x, start_y):
             raise zwo_errors[r]
         return
 
     def get_dropped_frames(self):
         dropped_frames = c.c_int()
-        r = self.zwo_dll.ASIGetDroppedFrames(self.camera_id, dropped_frames)
-        if r:
+        if r := self.zwo_dll.ASIGetDroppedFrames(self.camera_id, dropped_frames):
             raise zwo_errors[r]
         return dropped_frames.value
 
     def enable_dark_subtract(self, filename):
-        r = self.zwo_dll.ASIEnableDarkSubtract(self.camera_id, filename)
-        if r:
+        if r := self.zwo_dll.ASIEnableDarkSubtract(self.camera_id, filename):
             raise zwo_errors[r]
         return
 
     def disable_dark_subtract(self):
-        r = self.zwo_dll.ASIDisableDarkSubtract(self.camera_id)
-        if r:
+        if r := self.zwo_dll.ASIDisableDarkSubtract(self.camera_id):
             raise zwo_errors[r]
         return
 
     def start_video_capture(self):
         """Enable video capture mode.
         Retrieve video frames with :func:`capture_video_frame()`."""
-        r = self.zwo_dll.ASIStartVideoCapture(self.camera_id)
-        if r:
+        if r := self.zwo_dll.ASIStartVideoCapture(self.camera_id):
             raise zwo_errors[r]
         return
 
     def stop_video_capture(self):
         """Leave video capture mode."""
-        r = self.zwo_dll.ASIStopVideoCapture(self.camera_id)
-        if r:
+        if r := self.zwo_dll.ASIStopVideoCapture(self.camera_id):
             raise zwo_errors[r]
         return
 
@@ -485,48 +475,42 @@ class ZWO(Instrument, Camera):
             elif whbi[3] == ASI_IMG_RAW16:
                 sz *= 2
             buffer_ = bytearray(sz)
-        else:
-            if not isinstance(buffer_, bytearray):
-                raise TypeError('Supplied buffer must be a bytearray')
+        elif isinstance(buffer_, bytearray):
             sz = len(buffer_)
 
+        else:
+            raise TypeError('Supplied buffer must be a bytearray')
         cbuf_type = c.c_char * len(buffer_)
         cbuf = cbuf_type.from_buffer(buffer_)
-        r = self.zwo_dll.ASIGetVideoData(
-            self.camera_id, cbuf, sz, int(timeout))
-
-        if r:
+        if r := self.zwo_dll.ASIGetVideoData(
+            self.camera_id, cbuf, sz, int(timeout)
+        ):
             raise zwo_errors[r]
         return buffer_
 
     def pulse_guide_on(self, direction):
-        r = self.zwo_dll.ASIPulseGuideOn(self.camera_id, direction)
-        if r:
+        if r := self.zwo_dll.ASIPulseGuideOn(self.camera_id, direction):
             raise zwo_errors[r]
         return
 
     def pulse_guide_off(self, direction):
-        r = self.zwo_dll.ASIPulseGuideOff(self.camera_id, direction)
-        if r:
+        if r := self.zwo_dll.ASIPulseGuideOff(self.camera_id, direction):
             raise zwo_errors[r]
         return
 
     def start_exposure(self, is_dark):
-        r = self.zwo_dll.ASIStartExposure(self.camera_id, is_dark)
-        if r:
+        if r := self.zwo_dll.ASIStartExposure(self.camera_id, is_dark):
             raise zwo_errors[r]
         return
 
     def stop_exposure(self):
-        r = self.zwo_dll.ASIStopExposure(self.camera_id)
-        if r:
+        if r := self.zwo_dll.ASIStopExposure(self.camera_id):
             raise zwo_errors[r]
         return
 
     def get_exposure_status(self):
         status = c.c_int()
-        r = self.zwo_dll.ASIGetExpStatus(self.camera_id, status)
-        if r:
+        if r := self.zwo_dll.ASIGetExpStatus(self.camera_id, status):
             raise zwo_errors[r]
         return status.value
 
@@ -539,30 +523,26 @@ class ZWO(Instrument, Camera):
             elif whbi[3] == ASI_IMG_RAW16:
                 sz *= 2
             buffer_ = bytearray(sz)
-        else:
-            if not isinstance(buffer_, bytearray):
-                raise TypeError('Supplied buffer must be a bytearray')
+        elif isinstance(buffer_, bytearray):
             sz = len(buffer_)
 
+        else:
+            raise TypeError('Supplied buffer must be a bytearray')
         cbuf_type = c.c_char * len(buffer_)
         cbuf = cbuf_type.from_buffer(buffer_)
-        r = self.zwo_dll.ASIGetDataAfterExp(self.camera_id, cbuf, sz)
-
-        if r:
+        if r := self.zwo_dll.ASIGetDataAfterExp(self.camera_id, cbuf, sz):
             raise zwo_errors[r]
         return buffer_
 
     def get_id(self):
         id2 = _ASI_ID()
-        r = self.zwo_dll.ASIGetID(self.camera_id, id2)
-        if r:
+        if r := self.zwo_dll.ASIGetID(self.camera_id, id2):
             raise zwo_errors[r]
         return id2.get_id()
 
     def set_id(self, new_id):
         id2 = _ASI_ID(new_id.encode())
-        r = self.zwo_dll.ASISetID(self.camera_id, id2)
-        if r:
+        if r := self.zwo_dll.ASISetID(self.camera_id, id2):
             raise zwo_errors[r]
 
     def get_gain_offset(self):
@@ -570,13 +550,13 @@ class ZWO(Instrument, Camera):
         offset_unity_gain = c.c_int()
         gain_lowest_RN = c.c_int()
         offset_lowest_RN = c.c_int()
-        r = self.zwo_dll.ASIGetGainOffset(
+        if r := self.zwo_dll.ASIGetGainOffset(
             self.camera_id,
             offset_highest_DR,
             offset_unity_gain,
             gain_lowest_RN,
-            offset_lowest_RN)
-        if r:
+            offset_lowest_RN,
+        ):
             raise zwo_errors[r]
         return [offset_highest_DR.value, offset_unity_gain.value,
                 gain_lowest_RN.value, offset_lowest_RN.value]
@@ -585,45 +565,39 @@ class ZWO(Instrument, Camera):
         bPinHigh = c.c_int()
         lDelay = c.c_long()
         lDuration = c.c_long()
-        r = self.zwo_dll.ASIGetTriggerOutputIOConf(
-            self.camera_id, pin, bPinHigh, lDelay, lDuration)
-
-        if r:
+        if r := self.zwo_dll.ASIGetTriggerOutputIOConf(
+            self.camera_id, pin, bPinHigh, lDelay, lDuration
+        ):
             raise zwo_errors[r]
         return [bPinHigh.value, lDelay.value, lDuration.value]
 
     def set_trigger_output_io_conf(self, pin, bPinHigh, lDelay, lDuration):
-        r = self.zwo_dll.ASISetTriggerOutputIOConf(
-            self.camera_id, pin, bPinHigh, lDelay, lDuration)
-
-        if r:
+        if r := self.zwo_dll.ASISetTriggerOutputIOConf(
+            self.camera_id, pin, bPinHigh, lDelay, lDuration
+        ):
             raise zwo_errors[r]
         return
 
     def get_camera_support_mode(self):
         mode = _ASI_SUPPORTED_MODE()
 
-        r = self.zwo_dll.ASIGetCameraSupportMode(self.camera_id, mode)
-        if r:
+        if r := self.zwo_dll.ASIGetCameraSupportMode(self.camera_id, mode):
             raise zwo_errors[r]
         return mode.get_dict()
 
     def get_camera_mode(self):
         mode = c.c_int()
-        r = self.zwo_dll.ASIGetCameraMode(self.camera_id, mode)
-        if r:
+        if r := self.zwo_dll.ASIGetCameraMode(self.camera_id, mode):
             raise zwo_errors[r]
         return mode.value
 
     def set_camera_mode(self, mode):
-        r = self.zwo_dll.ASISetCameraMode(self.camera_id, mode)
-        if r:
+        if r := self.zwo_dll.ASISetCameraMode(self.camera_id, mode):
             raise zwo_errors[r]
         return
 
     def send_soft_trigger(self, bStart):
-        r = self.zwo_dll.ASISendSoftTrigger(self.camera_id, bStart)
-        if r:
+        if r := self.zwo_dll.ASISendSoftTrigger(self.camera_id, bStart):
             raise zwo_errors[r]
         return
 
@@ -632,7 +606,7 @@ class ZWO(Instrument, Camera):
         Returns a :class:`tuple` containing ``(start_x, start_y, width, height)``."""
         xywh = self.get_roi_start_position()
         whbi = self.get_roi_format()
-        xywh.extend(whbi[0:2])
+        xywh.extend(whbi[:2])
         return xywh
 
     def set_roi(
@@ -720,8 +694,6 @@ class ZWO(Instrument, Camera):
         while self.get_exposure_status() == ASI_EXP_WORKING:
             if poll:
                 time.sleep(poll)
-            pass
-
         status = self.get_exposure_status()
         if status != ASI_EXP_SUCCESS:
             raise ZWO_CaptureError('Could not capture image', status)
@@ -729,7 +701,7 @@ class ZWO(Instrument, Camera):
         data = self.get_data_after_exposure(buffer_)
         whbi = self.get_roi_format()
         shape = [whbi[1], whbi[0]]
-        if whbi[3] == ASI_IMG_RAW8 or whbi[3] == ASI_IMG_Y8:
+        if whbi[3] in [ASI_IMG_RAW8, ASI_IMG_Y8]:
             img = np.frombuffer(data, dtype=np.uint8)
         elif whbi[3] == ASI_IMG_RAW16:
             img = np.frombuffer(data, dtype=np.uint16)
@@ -742,22 +714,20 @@ class ZWO(Instrument, Camera):
 
         if filename is not None:
             from PIL import Image
-            mode = None
             if len(img.shape) == 3:
                 img = img[:, :, ::-1]  # Convert BGR to RGB
-            if whbi[3] == ASI_IMG_RAW16:
-                mode = 'I;16'
+            mode = 'I;16' if whbi[3] == ASI_IMG_RAW16 else None
             image = Image.fromarray(img, mode=mode)
             image.save(filename)
-            print('Image saved in %s' % filename)
+            print(f'Image saved in {filename}')
 
             if save_settings:
                 settings = self.get_control_values()
-                filename = os.path.splitext(filename)[0] + '.txt'
+                filename = f'{os.path.splitext(filename)[0]}.txt'
                 with open(filename, 'w') as f:
                     for k in sorted(settings.keys()):
                         f.write('%s: %s\n' % (k, str(settings[k])))
-                print('Camera settings saved to %s' % filename)
+                print(f'Camera settings saved to {filename}')
 
         return img
 
@@ -777,7 +747,7 @@ class ZWO(Instrument, Camera):
         data = self.get_video_data(buffer_=buffer_, timeout=timeout)
         whbi = self.get_roi_format()
         shape = [whbi[1], whbi[0]]
-        if whbi[3] == ASI_IMG_RAW8 or whbi[3] == ASI_IMG_Y8:
+        if whbi[3] in [ASI_IMG_RAW8, ASI_IMG_Y8]:
             img = np.frombuffer(data, dtype=np.uint8)
         elif whbi[3] == ASI_IMG_RAW16:
             img = np.frombuffer(data, dtype=np.uint16)
@@ -790,31 +760,29 @@ class ZWO(Instrument, Camera):
 
         if filename is not None:
             from PIL import Image
-            mode = None
             if len(img.shape) == 3:
                 img = img[:, :, ::-1]  # Convert BGR to RGB
-            if whbi[3] == ASI_IMG_RAW16:
-                mode = 'I;16'
+            mode = 'I;16' if whbi[3] == ASI_IMG_RAW16 else None
             image = Image.fromarray(img, mode=mode)
             image.save(filename)
-            print('Video frame saved in %s' % filename)
+            print(f'Video frame saved in {filename}')
 
             if save_settings:
                 settings = self.get_control_values()
-                filename = os.path.splitext(filename)[0] + '.txt'
+                filename = f'{os.path.splitext(filename)[0]}.txt'
                 with open(filename, 'w') as f:
                     for k in sorted(settings.keys()):
                         f.write('%s: %s\n' % (k, str(settings[k])))
-                print('Camera settings saved to %s' % filename)
+                print(f'Camera settings saved to {filename}')
 
         return img
 
     def get_control_values(self):
         controls = self.get_controls()
-        r = {}
-        for k in controls:
-            r[k] = self.get_control_value(controls[k]['ControlType'])[0]
-        return r
+        return {
+            k: self.get_control_value(controls[k]['ControlType'])[0]
+            for k in controls
+        }
 
     def auto_exposure(self, auto=('Exposure', 'Gain')):
         controls = self.get_controls()
@@ -1001,9 +969,9 @@ if __name__ == '__main__':
     print('Camera controls:')
     controls = camera.get_controls()
     for cn in sorted(controls.keys()):
-        print('    %s:' % cn)
+        print(f'    {cn}:')
         for k in sorted(controls[cn].keys()):
-            print('        %s: %s' % (k, repr(controls[cn][k])))
+            print(f'        {k}: {repr(controls[cn][k])}')
 
     # Use minimum USB bandwidth permitted
     #camera.set_control_value(ASI_BANDWIDTHOVERLOAD, camera.get_controls()['BandWidth']['MinValue'])
@@ -1034,20 +1002,20 @@ if __name__ == '__main__':
     filename = 'image_mono.jpg'
     camera.set_image_type(ASI_IMG_RAW8)
     camera.capture(filename=filename)
-    print('Saved to %s' % filename)
+    print(f'Saved to {filename}')
 
     print('Capturing a single 16-bit mono image')
     filename = 'image_mono16.tiff'
     camera.set_image_type(ASI_IMG_RAW16)
     camera.capture(filename=filename)
-    print('Saved to %s' % filename)
+    print(f'Saved to {filename}')
 
     if camera_info['IsColorCam']:
         filename = 'image_color.jpg'
         camera.set_image_type(ASI_IMG_RGB24)
         print('Capturing a single, color image')
         camera.capture(filename=filename)
-        print('Saved to %s' % filename)
+        print(f'Saved to {filename}')
     else:
         print('Color image not available with this camera')
 

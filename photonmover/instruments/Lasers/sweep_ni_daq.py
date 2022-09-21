@@ -3,15 +3,14 @@ import matplotlib.pyplot as plt
 import sys
 import numpy as np
 
-data_0 = list()
-data_1 = list()
+data_0 = []
+data_1 = []
 
 AIN_RECEIVED = "/Dev1/ai0"  # Analog signal corresponding to the received power
 AIN_TAP = "/Dev1/ai1"  # Analog signal corresponding to the tap power
 PFI_CLK = "/Dev1/pfi0"  # Trigger coming from the laser
 
-for i in [1]:
-
+for _ in [1]:
     with nidaqmx.Task() as task:
 
         init_wav = 1520.0

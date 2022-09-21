@@ -63,10 +63,7 @@ class AwgWSmu(Experiment):
                 else:
                     self.meas_smu = instr
 
-        if (self.drive_smu is not None) and (self.meas_smu is not None):
-            return True
-        else:
-            return False
+        return self.drive_smu is not None and self.meas_smu is not None
 
     def get_description(self):
         """
@@ -102,7 +99,7 @@ class AwgWSmu(Experiment):
 
             points_per_half_period = round(points_per_period / 2)
             single_period = [low_value] * points_per_half_period + \
-                [high_value] * points_per_half_period
+                    [high_value] * points_per_half_period
             waveform_points = single_period * num_periods
 
         elif shape == 'triangle':

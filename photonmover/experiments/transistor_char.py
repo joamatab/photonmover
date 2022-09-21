@@ -58,10 +58,7 @@ class BJTTransOutputCurve(Experiment):
                 else:
                     self.ce_smu = instr
 
-        if (self.ce_smu is not None) and (self.be_smu is not None):
-            return True
-        else:
-            return False
+        return self.ce_smu is not None and self.be_smu is not None
 
     def get_description(self):
         """
@@ -138,9 +135,7 @@ class BJTTransOutputCurve(Experiment):
         self.ce_smu.set_voltage(prev_ce_voltage)
 
         # The plot data is given as [x vals, y vals1, y vals2,...]
-        all_plt_data = [iv_data[:, 0]]
-        all_plt_data.extend(all_meas_data)
-
+        all_plt_data = [iv_data[:, 0], *all_meas_data]
         self.data = all_plt_data
 
         return iv_data
@@ -214,10 +209,7 @@ class FETTransOutputCurve(Experiment):
                 else:
                     self.drain_smu = instr
 
-        if (self.gate_smu is not None) and (self.drain_smu is not None):
-            return True
-        else:
-            return False
+        return self.gate_smu is not None and self.drain_smu is not None
 
     def get_description(self):
         """
@@ -294,9 +286,7 @@ class FETTransOutputCurve(Experiment):
         self.drain_smu.set_voltage(prev_drain_voltage)
 
         # The plot data is given as [x vals, y vals1, y vals2,...]
-        all_plt_data = [iv_data[:, 0]]
-        all_plt_data.extend(all_meas_data)
-
+        all_plt_data = [iv_data[:, 0], *all_meas_data]
         self.data = all_plt_data
 
         return all_plt_data

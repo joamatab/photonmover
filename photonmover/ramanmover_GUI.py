@@ -139,7 +139,7 @@ class ramanmover_GUI(QtGui.QMainWindow):
         mod_list, experiment_class_list = parser.class_list(
             EXPERIMENTS_FOLDER, recursive=True)
 
-        self.experiment_list = list()
+        self.experiment_list = []
 
         for i, class_name in enumerate(experiment_class_list):
 
@@ -176,7 +176,7 @@ class ramanmover_GUI(QtGui.QMainWindow):
                         # (see https://stackoverflow.com/questions/1464548/pyqt-qmenu-dynamically-populated-and-clicked)
                         def receiver(
                             bVal, exp_obj=experiment_object): \
-                            return self.call_experiment(exp_obj)
+                                return self.call_experiment(exp_obj)
 
                         # Add the menu entry
                         self.create_and_add_action(
@@ -239,7 +239,7 @@ class ramanmover_GUI(QtGui.QMainWindow):
         # row, column, row span, column span
         self.layout.addWidget(self.settings_group_box, row, 0, 2, 3)
 
-        row = row + 2
+        row += 2
 
         if "wavs" in self.param_list:
 
@@ -259,7 +259,7 @@ class ramanmover_GUI(QtGui.QMainWindow):
 
             self.layout.addWidget(self.laser_group_box, row, 0, 1, 2)
 
-            row = row + 1
+            row += 1
 
             self.tx_group_box = QtGui.QGroupBox("Coupling and Tx")
             layout = QtGui.QGridLayout()
@@ -294,7 +294,7 @@ class ramanmover_GUI(QtGui.QMainWindow):
 
             self.layout.addWidget(self.tx_group_box, row, 0, 4, 3)
 
-            row = row + 4
+            row += 4
 
         if "wavs" in self.param_list:
 
@@ -322,7 +322,7 @@ class ramanmover_GUI(QtGui.QMainWindow):
             # row, column, row span, column span
             self.layout.addWidget(self.wav_group_box, row, 0, 1, 4)
 
-            row = row + 1
+            row += 1
 
         if "powers" in self.param_list:
 
@@ -348,7 +348,7 @@ class ramanmover_GUI(QtGui.QMainWindow):
             # row, column, row span, column span
             self.layout.addWidget(self.power_group_box, row, 0, 1, 4)
 
-            row = row + 1
+            row += 1
 
         # "Others" group box
         self.others_group_box = QtGui.QGroupBox("Other params")
@@ -370,7 +370,7 @@ class ramanmover_GUI(QtGui.QMainWindow):
             0,
             others_row_span,
             4)
-        row = row + others_row_span
+        row += others_row_span
 
         if "num_reps" in self.param_list:
             layout.addWidget(QtGui.QLabel('Num meas per wav: '), 0, 2)
@@ -385,7 +385,7 @@ class ramanmover_GUI(QtGui.QMainWindow):
             0,
             others_row_span,
             4)
-        row = row + others_row_span
+        row += others_row_span
 
         if "sampling_freq" in self.param_list:
             layout.addWidget(QtGui.QLabel('Sampling freq (samp/s): '), 0, 2)
@@ -401,7 +401,7 @@ class ramanmover_GUI(QtGui.QMainWindow):
             0,
             others_row_span,
             4)
-        row = row + others_row_span
+        row += others_row_span
 
         # Plotting indicators
         self.plot_button = QtGui.QPushButton("Plot last experiment data", self)
@@ -563,13 +563,7 @@ class ramanmover_GUI(QtGui.QMainWindow):
         Returns a list of the instruments with the specified category
         category is one of the instrument interfaces. Ex: Laser
         """
-        lst = []
-
-        for instr in self.instr_list:
-            if isinstance(instr, category):
-                lst.append(instr)
-
-        return lst
+        return [instr for instr in self.instr_list if isinstance(instr, category)]
 
     def call_experiment(self, experiment_object):
         """
@@ -586,13 +580,9 @@ class ramanmover_GUI(QtGui.QMainWindow):
 
         params = self._generate_params_dict_(experiment_object)
         filename = QtGui.QFileDialog.getSaveFileName()
-        filename = filename[0]
-
         self.last_experiment = experiment_object
 
-        # Run the experiment in the experiment thread (if there is a filename
-        # specified)
-        if filename:
+        if filename := filename[0]:
             self.exp_thread.started.connect(
                 lambda: experiment_object.run_experiment(
                     params, filename))
@@ -671,17 +661,13 @@ class ramanmover_GUI(QtGui.QMainWindow):
                         "We don't know how to treat %d indicators to specify a param" % len(
                             element[0]))
 
-            else:
-                # It means we don't have an indicator for the variable!
-
-                # We can check if the parameter we lack has a default value, in
-                # which case this is not a problem
-                if key not in experiment_object.default_params():
+            elif key not in experiment_object.default_params():
                     # There is no default value and no indicator - this is a
                     # problem
-                    raise ValueError(
-                        "The experiment %s requires the param %s and there is no indicator or default value for it!" %
-                        (experiment_object.get_name(), key))
+                raise ValueError(
+                    f"The experiment {experiment_object.get_name()} requires the param {key} and there is no indicator or default value for it!"
+                )
+
 
         return params_dict
 
