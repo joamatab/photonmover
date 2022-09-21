@@ -43,7 +43,7 @@ class SantecMPM200(Instrument, PowerMeter):
         # self.set_range(None, -20)
 
         # Create variable for wavelength offset power table
-        self.wop = dict()
+        self.wop = {}
 
     def close(self):
         """
@@ -63,13 +63,13 @@ class SantecMPM200(Instrument, PowerMeter):
         err = self.gpib.read_raw()
         while "0," not in str(err):
             if print_errors:
-                print("Error: %s" % err)
+                print(f"Error: {err}")
             self.gpib.write('ERR?')
             err = self.gpib.read_raw()
 
     def cfg_mode(self, mode):
         if mode in ["CONST1", "CONST2", "SWEEP1", "SWEEP2", "FREERUN"]:
-            self.gpib.write("WMOD %s" % mode)
+            self.gpib.write(f"WMOD {mode}")
         else:
             print("Specified mode not correct")
 
@@ -77,7 +77,7 @@ class SantecMPM200(Instrument, PowerMeter):
     # units = 1 --> mW
     def cfg_units(self, units):
         if units in [0, 1]:
-            self.gpib.write("UNIT %s" % units)
+            self.gpib.write(f"UNIT {units}")
         else:
             print("Specified unit not correct")
 
@@ -165,12 +165,15 @@ class SantecMPM200(Instrument, PowerMeter):
     def create_power_offset_table(self, port):
         wop = [-1e9]
         # Get all the calibrated power offset data
-        for i in range(1, 20):
-            wop.append(
-                float(
-                    self.gpib.query_ascii_values(
-                        "CWAVPO? %d,%d,%d" %
-                        (self.module, port, i))[0]))
+        wop.extend(
+            float(
+                self.gpib.query_ascii_values(
+                    "CWAVPO? %d,%d,%d" % (self.module, port, i)
+                )[0]
+            )
+            for i in range(1, 20)
+        )
+
         self.wop[(self.module, port)] = wop
 
     def get_power_offset_raw(self, port, wavelength):
@@ -182,12 +185,10 @@ class SantecMPM200(Instrument, PowerMeter):
         x1_num = int(min(max(math.ceil((wavelength - 1270) / 20) + 1, 1), 19))
         if x0_num == x1_num:
             return wop[x0_num]
-        else:
-            x0 = (20 * (x0_num - 1)) + 1270
-            x1 = (20 * (x1_num - 1)) + 1270
-            y0 = wop[x0_num]
-            y1 = wop[x1_num]
-            return (y1 - y0) / (x1 - x0) * (wavelength - x0) + y0
+        x0 = (20 * (x0_num - 1)) + 1270
+        x1 = (20 * (x1_num - 1)) + 1270
+        y0 = wop[x0_num]
+        return (wop[x1_num] - y0) / (x1 - x0) * (wavelength - x0) + y0
 
     def get_power_offsets(self, port, wavelengths, wave_ref):
         if self.module < 0 or self.module > 4:
@@ -199,11 +200,10 @@ class SantecMPM200(Instrument, PowerMeter):
 
         # Perform offset calculation for the fixed wavelength
         fwop = self.get_power_offset_raw(port, wave_ref)
-        # Perform offset calculation for all wavelengths
-        po = []
-        for wavelength in wavelengths:
-            po.append(self.get_power_offset_raw(port, wavelength) - fwop)
-        return po
+        return [
+            self.get_power_offset_raw(port, wavelength) - fwop
+            for wavelength in wavelengths
+        ]
 
     def get_logged_data(self, port):
         if self.module < 0 or self.module > 4:
@@ -219,7 +219,7 @@ class SantecMPM200(Instrument, PowerMeter):
         status = self.gpib.read_raw()  # buf_size = 2 read_raw
         # print(status)
         # Detect if the logged data is invalid
-        if status[0:1] != b'#':
+        if status[:1] != b'#':
             raise Exception("Logged data is invalid!")
 
         # Read the number of bytes to read to read the length of the data sequence

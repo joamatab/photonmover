@@ -66,26 +66,26 @@ class SantecTSL550(Instrument, TunableLaser):
     # mode = 0 --> dBm
     # mode = 1 --> mW
     def set_power_units(self, mode):
-        self.gpib.write(":SOUR:POW:UNIT " + str(mode))
+        self.gpib.write(f":SOUR:POW:UNIT {str(mode)}")
 
     def set_power(self, value):
-        self.gpib.write(":SOUR:POW:LEV " + str(value))
+        self.gpib.write(f":SOUR:POW:LEV {str(value)}")
 
     # wavelength in nm
     def set_wavelength(self, wav):
-        self.gpib.write(":SOUR:WAV " + str(wav))
+        self.gpib.write(f":SOUR:WAV {str(wav)}")
 
     # Configures the number of sweeps to perform
     def cfg_num_sweeps(self, num_sweeps):
-        self.gpib.write(":SOUR:WAV:SWE:CYCL " + str(num_sweeps))
+        self.gpib.write(f":SOUR:WAV:SWE:CYCL {str(num_sweeps)}")
 
     # Configures the delay between continuous sweeps (in s)
     def cfg_delay(self, time):
-        self.gpib.write(":SOUR:WAV:SWE:DEL " + str(time))
+        self.gpib.write(f":SOUR:WAV:SWE:DEL {str(time)}")
 
     # Configures the time between steps (in s)
     def cfg_dwell(self, time):
-        self.gpib.write(":SOUR:WAV:SWE:DWEL " + str(time))
+        self.gpib.write(f":SOUR:WAV:SWE:DWEL {str(time)}")
 
     # Sets the mode
     # 0 : Step operation, one way
@@ -93,21 +93,21 @@ class SantecTSL550(Instrument, TunableLaser):
     # 2 : Step operation, two way
     # 3 : Continuous operation, two way
     def cfg_mode(self, mode):
-        self.gpib.write("SOUR:WAV:SWE:MOD " + str(mode))
+        self.gpib.write(f"SOUR:WAV:SWE:MOD {str(mode)}")
 
     # Sets the sweep speed in the continuous sweep (in nm/s, between 0.5 and
     # 100)
     def cfg_speed(self, speed):
-        self.gpib.write("SOUR:WAV:SWE:SPE " + str(speed))
+        self.gpib.write(f"SOUR:WAV:SWE:SPE {str(speed)}")
 
     # Sets the start and stop wavelength of the sweep
     def cfg_start_stop(self, init_wav, end_wav):
-        self.gpib.write("SOUR:WAV:SWE:STAR " + str(init_wav))
-        self.gpib.write("SOUR:WAV:SWE:STOP " + str(end_wav))
+        self.gpib.write(f"SOUR:WAV:SWE:STAR {str(init_wav)}")
+        self.gpib.write(f"SOUR:WAV:SWE:STOP {str(end_wav)}")
 
     # Sets the step in wavelength (between 0.0001 and 160 nm)
     def cfg_sweep_step(self, step):
-        self.gpib.write("SOUR:WAV:SWE:STEP " + str(step))
+        self.gpib.write(f"SOUR:WAV:SWE:STEP {str(step)}")
 
     # Starts a single sweep
     def start_sweep(self):
@@ -132,8 +132,8 @@ class SantecTSL550(Instrument, TunableLaser):
     # mode = 3: triggers every "step" nm
     def cfg_out_trig(self, mode, step=None):
         if (step is not None) and (mode == 3):
-            self.gpib.write("SOUR:TRIG:OUTP:STEP:WIDT " + str(step))
-        self.gpib.write("SOUR:TRIG:OUTP " + str(mode))
+            self.gpib.write(f"SOUR:TRIG:OUTP:STEP:WIDT {str(step)}")
+        self.gpib.write(f"SOUR:TRIG:OUTP {str(mode)}")
 
     # Configures the TSL to do a sweep by changing the wavelength continuously
     # mode = 0: One-way sweep. Mode = 1: two way sweep

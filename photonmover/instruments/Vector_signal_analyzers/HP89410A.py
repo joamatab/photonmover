@@ -45,11 +45,11 @@ class HP89410A(Instrument):
         :param channel: VSA channel (1 or 2)
         :param impedance: impedance (50, 75 or 1e6)
         """
-        if not (channel in [1, 2]):
+        if channel not in [1, 2]:
             print("Channel number not correct. Doing nothing.")
             return
 
-        if not (impedance in [50, 75, 1e6]):
+        if impedance not in [50, 75, 1e6]:
             print("Impedance not supported not correct. Doing nothing.")
             return
 
@@ -61,7 +61,7 @@ class HP89410A(Instrument):
         :param channel: VSA channel (1 or 2)
         """
 
-        if not (channel in [1, 2]):
+        if channel not in [1, 2]:
             print("Channel number not correct. Doing nothing.")
             return
 
@@ -73,7 +73,7 @@ class HP89410A(Instrument):
         :param channel: VSA channel (1 or 2)
         """
 
-        if not (channel in [1, 2]):
+        if channel not in [1, 2]:
             print("Channel number not correct. Doing nothing.")
             return
 
@@ -85,39 +85,39 @@ class HP89410A(Instrument):
         :param unit: Desired unit (string)
         """
 
-        if not (
-            unit in [
-                'dB',
-                'dBVrms',
-                'V2/Hz',
-                'Vrms2',
-                'dBm',
-                'dBVrms/rtHz',
-                'Vpk',
-                'Vrms2/Hz',
-                'dBm/Hz',
-                'pct',
-                'Vpk/rtHz',
-                'W',
-                'dBV',
-                'unitless',
-                'Vpk2',
-                'W/Hz',
-                'dBV/rtHz',
-                'V',
-                'Vpk2/Hz',
-                'Wrms',
-                'dBVpk',
-                'V/rtHz',
-                'Vrms',
-                'Wrms/Hz',
-                'dBVpk/rtHz',
-                'V2',
-                'Vrms/rtHz']):
+        if unit not in [
+            'dB',
+            'dBVrms',
+            'V2/Hz',
+            'Vrms2',
+            'dBm',
+            'dBVrms/rtHz',
+            'Vpk',
+            'Vrms2/Hz',
+            'dBm/Hz',
+            'pct',
+            'Vpk/rtHz',
+            'W',
+            'dBV',
+            'unitless',
+            'Vpk2',
+            'W/Hz',
+            'dBV/rtHz',
+            'V',
+            'Vpk2/Hz',
+            'Wrms',
+            'dBVpk',
+            'V/rtHz',
+            'Vrms',
+            'Wrms/Hz',
+            'dBVpk/rtHz',
+            'V2',
+            'Vrms/rtHz',
+        ]:
             print("Specified unit not correct. Doing nothing.")
             return
 
-        self.gpib.write('CALC:UNIT:POW %s;' % unit)
+        self.gpib.write(f'CALC:UNIT:POW {unit};')
 
     def autoscale_y(self):
         self.gpib.write('DISP:WIND:TRAC:Y:AUTO ONCE;')
@@ -127,7 +127,7 @@ class HP89410A(Instrument):
         Sets the resolution bandwidth.
         :param rbw: string with units or in Hz. Minimum is 300 mHz.
         """
-        self.gpib.write('SENS:BAND:RES %s;' % rbw)
+        self.gpib.write(f'SENS:BAND:RES {rbw};')
 
     def set_averaging(self, turn_on, av_type, num_averages):
         """
@@ -140,10 +140,10 @@ class HP89410A(Instrument):
 
         if turn_on:
             self.gpib.write('SENS:AVER:STAT ON;')
-            if not (type in ['MAX', 'RMS', 'COMP']):
+            if type not in ['MAX', 'RMS', 'COMP']:
                 self.gpib.write('SENS:AVER:TYPE RMS;')
             else:
-                self.gpib.write('SENS:AVER:TYPE %s;' % av_type)
+                self.gpib.write(f'SENS:AVER:TYPE {av_type};')
 
             self.gpib.write('SENS:AVER:COUN %d;' % num_averages)
         else:
@@ -163,11 +163,11 @@ class HP89410A(Instrument):
         :param data_reg_num: Data register number. 1 - 6.
         """
 
-        if not (trace_num in [1, 2, 3, 4]):
+        if trace_num not in [1, 2, 3, 4]:
             print("Trace number not correct. Doing nothing.")
             return
 
-        if not (data_reg_num in [1, 2, 3, 4, 5, 6]):
+        if data_reg_num not in [1, 2, 3, 4, 5, 6]:
             print("Data register number not correct. Doing nothing.")
             return
 
@@ -185,7 +185,7 @@ class HP89410A(Instrument):
         :return:
         """
 
-        if not (trace_id in [1, 2, 3, 4, 5, 6]):
+        if trace_id not in [1, 2, 3, 4, 5, 6]:
             print("Trace ID not correct. Doing nothing.")
             return
 
@@ -202,7 +202,7 @@ class HP89410A(Instrument):
         # convert to V/sqrt(Hz)
         ydata = np.sqrt(ydata) / np.sqrt(2)
 
-        with open(filename + '.csv', 'w+') as csvfile:
+        with open(f'{filename}.csv', 'w+') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(xdata)
             writer.writerow(ydata)
@@ -284,7 +284,7 @@ class HP89410A(Instrument):
 
         # After all is done, save the register data into files
         for i in range(len(freqs) - 1):
-            filename = base_filename + '_' + str(i)
+            filename = f'{base_filename}_{str(i)}'
             self.retrieve_data(i + 1, filename)
 
     def set_freq_axis(self, center, span, start_freq, end_freq):
@@ -299,16 +299,16 @@ class HP89410A(Instrument):
         """
 
         if center is not None:
-            self.gpib.write('SENS:FREQ:CENT %s;' % center)
+            self.gpib.write(f'SENS:FREQ:CENT {center};')
 
         if span is not None:
-            self.gpib.write('SENS:FREQ:SPAN %s;' % span)
+            self.gpib.write(f'SENS:FREQ:SPAN {span};')
 
         if start_freq is not None:
-            self.gpib.write('SENS:FREQ:STAR %s;' % start_freq)
+            self.gpib.write(f'SENS:FREQ:STAR {start_freq};')
 
         if end_freq is not None:
-            self.gpib.write('SENS:FREQ:STOP %s;' % end_freq)
+            self.gpib.write(f'SENS:FREQ:STOP {end_freq};')
 
     def convert_to_noise_spectra(self, freqs, Sv, Vpp_interferometer, dL):
         """

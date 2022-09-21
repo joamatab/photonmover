@@ -240,17 +240,7 @@ class HPLightWave(Instrument, TunableLaser, PowerMeter):
 
     def __choose_sweep_speed__(self, end_wav, init_wav):
 
-        # There are different sweep speeds: 0.5, 5, 20 and 40 nm/s
-        # Choose depending on the range of the sweep
-
-        if (end_wav - init_wav) > 30.0:
-            sweep_speed = 5
-        else:
-            # in nm/s. This speed seems good. There is also 5 nm/s, 20 nm/s and
-            # 40 nm/s
-            sweep_speed = 0.5
-
-        return sweep_speed
+        return 5 if (end_wav - init_wav) > 30.0 else 0.5
 
     def take_sweep(self, init_wav, end_wav, num_wav):
         """
@@ -353,7 +343,7 @@ class HPLightWave(Instrument, TunableLaser, PowerMeter):
 
         # Check for acquisition finished
         acq_finished = self.lwmain.query("SENS%d:CHAN1:FUNC:STATE?" % slot)
-        while not ('COMPLETE' in acq_finished):
+        while 'COMPLETE' not in acq_finished:
             print(acq_finished)
             time.sleep(0.5)
             acq_finished = self.lwmain.query("SENS%d:CHAN1:FUNC:STATE?" % slot)
@@ -363,10 +353,7 @@ class HPLightWave(Instrument, TunableLaser, PowerMeter):
         # Acquisition finished, query the values
         self.lwmain.write("SENS%d:CHAN1:FUNC:RES?" % slot)
 
-        # response = self.lwmain.read_raw()
-        data = self.lwmain.read_binary_values()
-
-        return data
+        return self.lwmain.read_binary_values()
 
         # The instrument returns the logging result in the following format:
         # #xyyyffff...; the first digit after the hash denotes the number of ascii
@@ -437,7 +424,7 @@ class HPLightWave(Instrument, TunableLaser, PowerMeter):
 
         # Check for acquisition finished
         acq_finished = self.lwmain.query("SENS%d:FUNC:STATE?" % slot)
-        while not ('COMPLETE' in acq_finished):
+        while 'COMPLETE' not in acq_finished:
             print(acq_finished)
             time.sleep(2)
             # self.lwmain.write(":TRIG 1")
@@ -448,10 +435,7 @@ class HPLightWave(Instrument, TunableLaser, PowerMeter):
         # Acquisition finished, query the values
         self.lwmain.write("SENS%d:CHAN1:FUNC:RES?" % slot)
 
-        # response = self.lwmain.read_raw()
-        dt = self.lwmain.read_binary_values()
-
-        return dt
+        return self.lwmain.read_binary_values()
 
     def get_state(self):
         """

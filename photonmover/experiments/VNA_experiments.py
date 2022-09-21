@@ -44,10 +44,7 @@ class RetrieveVNATrace(Experiment):
             if isinstance(instr, VNA):
                 self.vna = instr
 
-        if self.vna is not None:
-            return True
-        else:
-            return False
+        return self.vna is not None
 
     def get_description(self):
         """
@@ -166,10 +163,7 @@ class AcquireVNATrace(Experiment):
             if isinstance(instr, VNA):
                 self.vna = instr
 
-        if self.vna is not None:
-            return True
-        else:
-            return False
+        return self.vna is not None
 
     def get_description(self):
         """
@@ -319,11 +313,7 @@ class VNABiasVSweep(Experiment):
             if isinstance(instr, TunableFilter):
                 self.tunable_filter = instr
 
-        if (self.vna is not None) and (
-                self.smu is not None) and (self.laser is not None):
-            return True
-        else:
-            return False
+        return self.vna is not None and self.smu is not None and self.laser is not None
 
     def get_description(self):
         """
@@ -395,7 +385,7 @@ class VNABiasVSweep(Experiment):
                             # Create the csv file
                             time_tuple = time.localtime()
                             filename_complete = "%s-VNAvsV--s_param=%s--format=%s--V=%dmV--Imeas=%.2eA--wav=%.2fnm--" \
-                                                "%d#%d#%d_%d#%d#%d.csv" % (filename,
+                                                    "%d#%d#%d_%d#%d#%d.csv" % (filename,
                                                                            s_param,
                                                                            format,
                                                                            v_set * 1000,
@@ -425,8 +415,7 @@ class VNABiasVSweep(Experiment):
         print('BW vs V acquisition finished')
 
         # The plot data is given as [x vals, y vals1, y vals2,...]
-        all_plt_data = [measurement[PLOT_S_PARAM][PLOT_FORMAT][0]]
-        all_plt_data.extend(all_meas_data)
+        all_plt_data = [measurement[PLOT_S_PARAM][PLOT_FORMAT][0], *all_meas_data]
         self.data = all_plt_data
 
         return all_plt_data
@@ -506,11 +495,7 @@ class VNABiasISweep(Experiment):
             if isinstance(instr, TunableFilter):
                 self.tunable_filter = instr
 
-        if (self.vna is not None) and (
-                self.smu is not None) and (self.laser is not None):
-            return True
-        else:
-            return False
+        return self.vna is not None and self.smu is not None and self.laser is not None
 
     def get_description(self):
         """
@@ -579,7 +564,7 @@ class VNABiasISweep(Experiment):
                             # Create the csv file
                             time_tuple = time.localtime()
                             filename_complete = "%s-VNAvsI--s_param=%s--format=%s--I=%.2eA--Vmeas=%.2eV--wav=%.2fnm--" \
-                                                "%d#%d#%d_%d#%d#%d.csv" % (filename,
+                                                    "%d#%d#%d_%d#%d#%d.csv" % (filename,
                                                                            s_param,
                                                                            format,
                                                                            i_set,
@@ -609,8 +594,7 @@ class VNABiasISweep(Experiment):
         print('BW vs I acquisition finished')
 
         # The plot data is given as [x vals, y vals1, y vals2,...]
-        all_plt_data = [measurement[PLOT_S_PARAM][PLOT_FORMAT][0]]
-        all_plt_data.extend(all_meas_data)
+        all_plt_data = [measurement[PLOT_S_PARAM][PLOT_FORMAT][0], *all_meas_data]
         self.data = all_plt_data
 
         return all_plt_data
@@ -695,11 +679,7 @@ class VNADoubleBiasVSweep(Experiment):
             if isinstance(instr, TunableFilter):
                 self.tunable_filter = instr
 
-        if (self.vna is not None) and (
-                self.smu1 is not None) and (self.smu2 is not None):
-            return True
-        else:
-            return False
+        return self.vna is not None and self.smu1 is not None and self.smu2 is not None
 
     def get_description(self):
         """
@@ -719,13 +699,9 @@ class VNADoubleBiasVSweep(Experiment):
 
         volts1 = params["voltages"]
         volts2 = params["voltages2"]
-        wavs = params["wavs"]
         num_averages = params["num_averages"]
 
-        if self.laser is None:
-            # If there is no laser, set the wavelength to a foo
-            wavs = [0.00]
-
+        wavs = [0.00] if self.laser is None else params["wavs"]
         # List of the relevant s parameters we want to obtain (S11, S12, ...)
         s_params = params["s_params"]
         # List of the measurements formats for each s parameter (logm, phas)
@@ -798,8 +774,8 @@ class VNADoubleBiasVSweep(Experiment):
                                     # Create the csv file
                                     time_tuple = time.localtime()
                                     filename_complete = "%s-VNAvs2V--s_param=%s--format=%s--V1=%dmV--V2=%dmV--" \
-                                                        "Imeas1=%.2eA--Imeas2=%.2eA--wav=%.2fnm--" \
-                                                        "%d#%d#%d_%d#%d#%d.csv" % (filename,
+                                                            "Imeas1=%.2eA--Imeas2=%.2eA--wav=%.2fnm--" \
+                                                            "%d#%d#%d_%d#%d#%d.csv" % (filename,
                                                                                    s_param,
                                                                                    format,
                                                                                    v1 * 1000,
@@ -865,7 +841,7 @@ class VNADoubleBiasVSweep(Experiment):
                                     # Create the csv file
                                     time_tuple = time.localtime()
                                     filename_complete = "%s-VNAvs2V--s_param=%s--format=%s--V1=%dmV--V2=%dmV--Imeas1=%.2eA--Imeas2=%.2eA--wav=%.2fnm--" \
-                                                        "%d#%d#%d_%d#%d#%d.csv" % (filename,
+                                                            "%d#%d#%d_%d#%d#%d.csv" % (filename,
                                                                                    s_param,
                                                                                    format,
                                                                                    v1 * 1000,
@@ -898,9 +874,7 @@ class VNADoubleBiasVSweep(Experiment):
         print('BW vs V1, V2 acquisition finished')
 
         # The plot data is given as [x vals, y vals1, y vals2,...]
-        all_plt_data = [measurement[PLOT_S_PARAM][PLOT_FORMAT][0]]
-        all_plt_data.extend(all_meas_data)
-
+        all_plt_data = [measurement[PLOT_S_PARAM][PLOT_FORMAT][0], *all_meas_data]
         self.data = all_plt_data
         return all_plt_data
 
@@ -992,11 +966,11 @@ class VNABiasVandBiasISweep(Experiment):
             if isinstance(instr, TunableFilter):
                 self.tunable_filter = instr
 
-        if (self.vna is not None) and (
-                self.v_smu is not None) and (self.i_smu is not None):
-            return True
-        else:
-            return False
+        return (
+            self.vna is not None
+            and self.v_smu is not None
+            and self.i_smu is not None
+        )
 
     def get_description(self):
         """
@@ -1016,13 +990,9 @@ class VNABiasVandBiasISweep(Experiment):
 
         volts = params["voltages"]
         currents = params["currents"]
-        wavs = params["wavs"]
         num_averages = params["num_averages"]
 
-        if self.laser is None:
-            # If there is no laser, set the wavelength to a foo
-            wavs = [0.00]
-
+        wavs = [0.00] if self.laser is None else params["wavs"]
         # List of the relevant s parameters we want to obtain (S11, S12, ...)
         s_params = params["s_params"]
         # List of the measurements formats for each s parameter (logm, phas)
@@ -1095,8 +1065,8 @@ class VNABiasVandBiasISweep(Experiment):
                                     # Create the csv file
                                     time_tuple = time.localtime()
                                     filename_complete = "%s-VNAvsIandV--s_param=%s--format=%s--V=%dmV--I=%.2eA--" \
-                                                        "Imeas=%.2eA--Vmeas=%.2eV--wav=%.2fnm--" \
-                                                        "%d#%d#%d_%d#%d#%d.csv" % (filename,
+                                                            "Imeas=%.2eA--Vmeas=%.2eV--wav=%.2fnm--" \
+                                                            "%d#%d#%d_%d#%d#%d.csv" % (filename,
                                                                                    s_param,
                                                                                    format,
                                                                                    volt * 1000,
@@ -1161,8 +1131,8 @@ class VNABiasVandBiasISweep(Experiment):
                                     # Create the csv file
                                     time_tuple = time.localtime()
                                     filename_complete = "%s-VNAvsIandV--s_param=%s--format=%s--V=%dmV--I=%.2eA--" \
-                                                        "Imeas=%.2eA--Vmeas=%.2eV--wav=%.2fnm--" \
-                                                        "%d#%d#%d_%d#%d#%d.csv" % (filename,
+                                                            "Imeas=%.2eA--Vmeas=%.2eV--wav=%.2fnm--" \
+                                                            "%d#%d#%d_%d#%d#%d.csv" % (filename,
                                                                                    s_param,
                                                                                    format,
                                                                                    volt * 1000,
@@ -1195,9 +1165,7 @@ class VNABiasVandBiasISweep(Experiment):
         print('BW vs V, I acquisition finished')
 
         # The plot data is given as [x vals, y vals1, y vals2,...]
-        all_plt_data = [measurement[PLOT_S_PARAM][PLOT_FORMAT][0]]
-        all_plt_data.extend(all_meas_data)
-
+        all_plt_data = [measurement[PLOT_S_PARAM][PLOT_FORMAT][0], *all_meas_data]
         self.data = all_plt_data
         return all_plt_data
 

@@ -73,16 +73,16 @@ class Xenics(Instrument, Camera):
                 self.xenics_handle, self.calibration_file.encode('utf-8'), flag)
             if error != 0:
                 msg = 'Could\'t load' + \
-                    ' calibration file ' + \
-                    str(self.calibration_file) + \
-                    '. Error code: ' + str(error)
+                        ' calibration file ' + \
+                        str(self.calibration_file) + \
+                        '. Error code: ' + str(error)
                 raise Exception(msg)
 
         property = "SETTLE"
         val = c_ulong(1)
         err = self.get_property_value(
             self.xenics_handle, property.encode('utf-8'), val)
-        print(property + "is " + str(val))
+        print(f"{property}is {str(val)}")
 
         # Load settings
         if self.settings_file is not None:
@@ -93,9 +93,9 @@ class Xenics(Instrument, Camera):
 
             if error != 0:
                 msg = 'Could\'t load' + \
-                    ' settings file ' + \
-                    str(self.settings_file) + \
-                    '. Error code: ' + str(error)
+                        ' settings file ' + \
+                        str(self.settings_file) + \
+                        '. Error code: ' + str(error)
                 raise Exception(msg)
 
         val = c_ulong(1)
@@ -103,7 +103,7 @@ class Xenics(Instrument, Camera):
             self.xenics_handle,
             property.encode('utf-8'),
             val)
-        print(property + "is " + str(val))
+        print(f"{property}is {str(val)}")
 
         return self
 
@@ -221,9 +221,7 @@ class Xenics(Instrument, Camera):
         Asks the camera what is the frame size in bytes.
         @return: c_ulong
         '''
-        frame_size = self.get_frame_size_dll(
-            self.xenics_handle)  # Size in bytes
-        return frame_size
+        return self.get_frame_size_dll(self.xenics_handle)
 
     def get_frame_dims(self):
         '''
@@ -252,9 +250,9 @@ class Xenics(Instrument, Camera):
         try:
             pixel_dtype = conversions[bytes_in_pixel]
         except BaseException:
-            raise Exception('Unsupported pixel size %s' % str(bytes_in_pixel))
+            raise Exception(f'Unsupported pixel size {str(bytes_in_pixel)}')
         if conversions is None:
-            raise Exception('Unsupported pixel size %s' % str(bytes_in_pixel))
+            raise Exception(f'Unsupported pixel size {str(bytes_in_pixel)}')
         return pixel_dtype
 
     def get_pixel_size(self):

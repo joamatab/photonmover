@@ -84,7 +84,7 @@ class Agilent81180A(Instrument, WaveformGenerator):
             print("The specified coupling mode is not correct. Doing nothing.")
             return
 
-        self.gpib.write(':OUTP:COUP %s;' % coupling)
+        self.gpib.write(f':OUTP:COUP {coupling};')
 
     def set_voltage(self, amplitude, offset):
         """
@@ -116,7 +116,7 @@ class Agilent81180A(Instrument, WaveformGenerator):
 
         self.shape = shape
 
-        self.gpib.write(":FUNC:SHAP %s;" % shape)
+        self.gpib.write(f":FUNC:SHAP {shape};")
 
     def set_duty_cycle(self, duty_cycle):
         """

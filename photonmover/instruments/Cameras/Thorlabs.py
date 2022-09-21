@@ -85,14 +85,13 @@ class ThorlabsCamera(Instrument, Camera):
 
     def close(self):
 
-        if self.handle is not None:
-            i = self.thorlabs_dll.is_ExitCamera(self.handle)
-            if i == 0:
-                print("ThorCam closed successfully.")
-            else:
-                print("Closing ThorCam failed with error code " + str(i))
-        else:
+        if self.handle is None:
             return
+        i = self.thorlabs_dll.is_ExitCamera(self.handle)
+        if i == 0:
+            print("ThorCam closed successfully.")
+        else:
+            print(f"Closing ThorCam failed with error code {str(i)}")
 
     # ---------------- PARAMETER SETTERS -----------------
 
@@ -101,6 +100,7 @@ class ThorlabsCamera(Instrument, Camera):
             print("only 8-bit images supported")
 
     def set_roi_shape(self, set_roi_shape):
+
         class IS_SIZE_2D(Structure):
             _fields_ = [('s32Width', c_int), ('s32Height', c_int)]
         AOI_size = IS_SIZE_2D(
@@ -119,9 +119,10 @@ class ThorlabsCamera(Instrument, Camera):
             print("ThorCam ROI size set successfully.")
             self.initialize_memory()
         else:
-            print("Set ThorCam ROI size failed with error code " + str(i))
+            print(f"Set ThorCam ROI size failed with error code {str(i)}")
 
     def set_roi_pos(self, set_roi_pos):
+
         class IS_POINT_2D(Structure):
             _fields_ = [('s32X', c_int), ('s32Y', c_int)]
         AOI_pos = IS_POINT_2D(
@@ -139,7 +140,7 @@ class ThorlabsCamera(Instrument, Camera):
         if i == 0:
             print("ThorCam ROI position set successfully.")
         else:
-            print("Set ThorCam ROI size failed with error code " + str(i))
+            print(f"Set ThorCam ROI size failed with error code {str(i)}")
 
     def set_exposure(self, exposure):
         # exposure should be given in ms
@@ -182,7 +183,7 @@ class ThorlabsCamera(Instrument, Camera):
         file_ext_indicator = IS_IMG_TIF
         if file_ext == '.bmp':
             file_ext_indicator = IS_IMG_BMP
-        if file_ext == '.jpg' or file_ext == '.jpeg':
+        if file_ext in ['.jpg', '.jpeg']:
             file_ext_indicator = IS_IMG_JPG
         if file_ext == '.png':
             file_ext_indicator = IS_IMG_PNG
@@ -228,23 +229,21 @@ class ThorlabsCamera(Instrument, Camera):
         self.handle = c_int(self.camera_id)
         i = is_InitCamera(byref(self.handle))
 
-        if i == 0:
-            print("ThorCam opened successfully.")
-            pixelclock = c_uint(11)  # set pixel clock to 43 MHz (fastest)
-            is_PixelClock = self.thorlabs_dll.is_PixelClock
-            is_PixelClock.argtypes = [c_int, c_uint, POINTER(c_uint), c_uint]
-            is_PixelClock(self.handle, 6, byref(pixelclock), sizeof(
-                pixelclock))  # 6 for setting pixel clock
+        if i != 0:
+            raise CameraOpenError(f"Opening the ThorCam failed with error code {str(i)}")
+        print("ThorCam opened successfully.")
+        pixelclock = c_uint(11)  # set pixel clock to 43 MHz (fastest)
+        is_PixelClock = self.thorlabs_dll.is_PixelClock
+        is_PixelClock.argtypes = [c_int, c_uint, POINTER(c_uint), c_uint]
+        is_PixelClock(self.handle, 6, byref(pixelclock), sizeof(
+            pixelclock))  # 6 for setting pixel clock
 
-            # 6 is for monochrome 8 bit. See uc480.h for definitions
-            self.thorlabs_dll.is_SetColorMode(self.handle, 6)
-            self.set_roi_shape(self.roi_shape)
-            self.set_roi_pos(self.roi_pos)
-            self.set_frametime(frametime)
-            self.set_exposure(exposure)
-        else:
-            raise CameraOpenError(
-                "Opening the ThorCam failed with error code " + str(i))
+        # 6 is for monochrome 8 bit. See uc480.h for definitions
+        self.thorlabs_dll.is_SetColorMode(self.handle, 6)
+        self.set_roi_shape(self.roi_shape)
+        self.set_roi_pos(self.roi_pos)
+        self.set_frametime(frametime)
+        self.set_exposure(exposure)
 
 
 if __name__ == '__main__':

@@ -34,7 +34,7 @@ class CoherentVerdi(Instrument, Laser):
         else:
             rm = visa.ResourceManager()
             try:
-                self.controller = rm.open_resource('COM'+str(self.com_port))
+                self.controller = rm.open_resource(f'COM{str(self.com_port)}')
                 self.is_initialized = True
             except ConnectionError:
                 raise ConnectionError('Cannot connect to Coherent Verdi controller')
@@ -119,7 +119,7 @@ class CoherentVerdi(Instrument, Laser):
             self.shutter_state = 'open'
         else:
             raise ValueError(" 'state' input must be 'open' or 'closed' ")
-        self.query_instrument("S={}".format(cmd))
+        self.query_instrument(f"S={cmd}")
 
     def get_shutter_state(self, print_out=False):
         """
@@ -134,7 +134,7 @@ class CoherentVerdi(Instrument, Laser):
             self.shutter_state = 'open'
 
         if print_out:
-            print('Shutter is {}'.format(self.shutter_state))
+            print(f'Shutter is {self.shutter_state}')
 
     def get_standby_state(self, print_out=False):
         """
@@ -163,13 +163,12 @@ class CoherentVerdi(Instrument, Laser):
         if keyswitch_state.lower() == '0':
             print("Key switch is in 'off' position. Cannot change setting remotely.")
             self.standby_state = 0
-        else:
-            if state.lower() == 'on':
-                self.query_instrument("LASER=1")
-                self.standby_state = 1
-            elif state.lower() == 'off':
-                self.query_instrument("LASER=0")
-                self.standby_state = 0
+        elif state.lower() == 'on':
+            self.query_instrument("LASER=1")
+            self.standby_state = 1
+        elif state.lower() == 'off':
+            self.query_instrument("LASER=0")
+            self.standby_state = 0
 
     def get_state(self):
         """
@@ -185,11 +184,11 @@ class CoherentVerdi(Instrument, Laser):
         * **power** (float): Desired output power, in watts. Must be between 0.01
                             and 10. No default.
         """
-        if not ((power <= 10) and (power >= 0.01)):
+        if power > 10 or power < 0.01:
             print("Power must be between 0.01 and 10 watts")
             return
         else:
-            self.query_instrument('POWER={}'.format(power))
+            self.query_instrument(f'POWER={power}')
 
     def get_power(self, get_setpoint=False):
         """
@@ -227,13 +226,11 @@ class CoherentVerdi(Instrument, Laser):
         data['vanadate']['temp_setting'] = self.query_instrument("?VST")
 
         for idx, diode in [(1, 'diode1'), (2, 'diode2')]:
-            data[diode]['current'] = self.query_instrument("?D{}C".format(idx))
-            data[diode]['temp'] = self.query_instrument("?D{}HST".format(idx))
-            data[diode]['hours'] = self.query_instrument("?D{}H".format(idx))
-            data[diode]['photocell'] = self.query_instrument(
-                "?D{}PC".format(idx))
-            data[diode]['temp_servo_status'] = self.query_instrument(
-                "?D{}SS".format(idx))
+            data[diode]['current'] = self.query_instrument(f"?D{idx}C")
+            data[diode]['temp'] = self.query_instrument(f"?D{idx}HST")
+            data[diode]['hours'] = self.query_instrument(f"?D{idx}H")
+            data[diode]['photocell'] = self.query_instrument(f"?D{idx}PC")
+            data[diode]['temp_servo_status'] = self.query_instrument(f"?D{idx}SS")
 
         return data
 

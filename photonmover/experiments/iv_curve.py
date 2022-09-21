@@ -47,10 +47,7 @@ class IVCurve(Experiment):
             if isinstance(instr, SourceMeter):
                 self.sm = instr
 
-        if self.sm is not None:
-            return True
-        else:
-            return False
+        return self.sm is not None
 
     def get_description(self):
         """

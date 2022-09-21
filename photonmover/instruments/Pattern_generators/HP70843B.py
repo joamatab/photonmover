@@ -101,7 +101,7 @@ class HP70843B(Instrument):
         pattern_length = len(pattern)
 
         # Construct formatted data block for PPG
-        data_header = '#' + str(len(str(pattern_length))) + str(pattern_length)
+        data_header = f'#{len(str(pattern_length))}{pattern_length}'
         data = data_header
 
         for bit in pattern:
@@ -163,13 +163,13 @@ class HP70843B(Instrument):
 
         on_bit_pattern = ''
 
-        for i in range(on_bits):
-            on_bit_pattern = on_bit_pattern + '1'
+        for _ in range(on_bits):
+            on_bit_pattern = f'{on_bit_pattern}1'
 
         bit_pattern = on_bit_pattern
 
-        for i in range(off_bits):
-            bit_pattern = bit_pattern + '0'
+        for _ in range(off_bits):
+            bit_pattern = f'{bit_pattern}0'
 
         self.set_pattern(pattern_store, bit_pattern)
         self.set_polarity(polarity)
@@ -187,11 +187,6 @@ if __name__ == '__main__':
     hilevel = amplitude
     polarity = 'positive'
 
-    ppg.configure_pulse(
-        repetition_rate,
-        pulse_width,
-        amplitude,
-        hilevel,
-        polarity)
+    ppg.configure_pulse(repetition_rate, pulse_width, hilevel, hilevel, polarity)
     ppg.turn_on()
     ppg.close()

@@ -127,7 +127,7 @@ class ParameterAnalyzer(Instrument, SourceMeter):
         # self.sparam.write("FL 0")
         self.sparam.write("CN %d" % channel)
         # Last number: current compliance (0.05)
-        self.sparam.write("DV 2,11,0," + str(self.cur_compliance))
+        self.sparam.write(f"DV 2,11,0,{str(self.cur_compliance)}")
 
         self.set_voltage(0.0)
 
@@ -147,4 +147,4 @@ class ParameterAnalyzer(Instrument, SourceMeter):
             print('Specified integration time is not correct.')
             return
 
-        self.sparam.write("SLI " + str(mode))
+        self.sparam.write(f"SLI {str(mode)}")

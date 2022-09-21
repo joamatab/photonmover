@@ -34,11 +34,11 @@ class ThorlabsPowerMeter(Instrument, PowerMeter):
         deviceCount = c_uint32()
         self.findRsrc(byref(deviceCount))
 
-        print("Thorlabs PM devices found: " + str(deviceCount.value))
+        print(f"Thorlabs PM devices found: {str(deviceCount.value)}")
 
         resourceName = create_string_buffer(1024)
 
-        for i in range(0, deviceCount.value):
+        for i in range(deviceCount.value):
             self.getRsrcName(c_int(i), resourceName)
             print(c_char_p(resourceName.raw).value)
             break
@@ -101,8 +101,7 @@ class ThorlabsPowerMeter(Instrument, PowerMeter):
         Returns:
             int: The return value, 0 is for success
         """
-        pInvokeResult = self.dll.TLPM_close(self.devSession)
-        return pInvokeResult
+        return self.dll.TLPM_close(self.devSession)
 
     def set_wavelength(self, wavelength):
         """

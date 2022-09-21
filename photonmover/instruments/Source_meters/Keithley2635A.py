@@ -66,13 +66,11 @@ class Keithley2635A(Instrument, SourceMeter):
         :param mode: Either VOLT or CURR
         :return:
         """
-        if not (mode == 'VOLTS' or mode == 'AMPS'):
+        if mode not in ['VOLTS', 'AMPS']:
             print('Source meter mode not correct. NO action taken')
             return
 
-        self.gpib.write(
-            'smua.source.func = smua.OUTPUT_DC%s' %
-            mode)  # set voltage
+        self.gpib.write(f'smua.source.func = smua.OUTPUT_DC{mode}')
         self.mode = mode
 
     def set_voltage_compliance(self, v_comp):
@@ -93,7 +91,7 @@ class Keithley2635A(Instrument, SourceMeter):
         :return:
         """
 
-        if not (self.mode == 'VOLTS'):
+        if self.mode != 'VOLTS':
             self.turn_off()
             self.set_func('VOLTS')
             time.sleep(0.1)
@@ -110,7 +108,7 @@ class Keithley2635A(Instrument, SourceMeter):
         :return:
         """
 
-        if not (self.mode == 'AMPS'):
+        if self.mode != 'AMPS':
             self.turn_off()
             self.set_func('AMPS')
             time.sleep(0.1)
@@ -213,14 +211,14 @@ class Keithley2635A(Instrument, SourceMeter):
         # Count: the number of measurements neede for one reading. Has to be
         # between 1 and 100
 
-        if type == 'repeat_average':
-            type_str = 'FILTER_REPEAT_AVG'
-        elif type == 'moving_average':
-            type_str = 'FILTER_MOVING_AVG'
-        elif type == 'median':
+        if type == 'median':
             type_str = 'FILTER_MEDIAN'
 
-        self.gpib.write('smua.measure.filter.type = smua.%s' % type_str)
+        elif type == 'moving_average':
+            type_str = 'FILTER_MOVING_AVG'
+        elif type == 'repeat_average':
+            type_str = 'FILTER_REPEAT_AVG'
+        self.gpib.write(f'smua.measure.filter.type = smua.{type_str}')
 
         if count > 100:
             print('Specified filter count is more than the max. Setting to max.')

@@ -57,10 +57,10 @@ try:
 
 except getopt.error as err:
     # output error, and return with an error code
-    print(str(err))
+    print(err)
 
 
-print('Loading instrument list from %s' % instr_file)
+print(f'Loading instrument list from {instr_file}')
 
 # Generate instrument list from the yaml file and initialize the instruments
 instr_list, vars_list = parse_instr_yaml_file(instr_file)

@@ -48,10 +48,7 @@ class AWG_and_OSC(Experiment):
             if isinstance(instr, RigolDS1000):
                 self.osc = instr
 
-        if (self.osc is not None) and (self.awg is not None):
-            return True
-        else:
-            return False
+        return self.osc is not None and self.awg is not None
 
     def get_description(self):
         """

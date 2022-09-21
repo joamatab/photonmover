@@ -55,7 +55,7 @@ class Newport8752(Instrument):
         """Send a command to the picomotor driver."""
         line = cmd + '\r\n'
         retval = self.serial.write(bytes(line, encoding='ascii'))
-        print('sent %s' % line)
+        print(f'sent {line}')
         self.serial.flush()
         return retval
 
@@ -139,7 +139,7 @@ class Newport8752(Instrument):
         cmd = 'rel {driver}={steps}'.format(
             driver=self.axis_map[axis], steps=steps)
         if go:
-            cmd = cmd + ' g'
+            cmd += ' g'
         return self.sendrecv(cmd)
 
     def move(self, units, axis, vel=None, acc=None, motor=0, go=True):
@@ -176,8 +176,7 @@ class Newport8752(Instrument):
         """Return the driver status byte as an integer (see manual pag. 185)."""
         self.send('STA')
         time.sleep(self.wait)
-        ret_str = self.readlines()
-        return ret_str
+        return self.readlines()
 
     def status(self):
         ret_str = self.status_msg()

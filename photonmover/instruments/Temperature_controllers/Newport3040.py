@@ -77,7 +77,7 @@ class Newport3040(Instrument, TempController):
             print('Selected TEC mode not recognized. Doing nothing.')
             return
 
-        self.gpib.write('TEC:MODE:%s,' % mode)
+        self.gpib.write(f'TEC:MODE:{mode},')
         self.mode = mode
 
     def turn_on(self):

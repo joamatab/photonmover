@@ -190,11 +190,14 @@ class photonmover_GUI(QMainWindow):
         mod_list, experiment_class_list = parser.class_list(
             EXPERIMENTS_FOLDER, recursive=True)
 
-        self.experiment_list = list()
+        self.experiment_list = []
 
         for i, class_name in enumerate(experiment_class_list):
             # Import the module
-            spec = importlib.util.spec_from_file_location(path.splitext(path.basename(mod_list[i]))[0], mod_list[i]+'.py')
+            spec = importlib.util.spec_from_file_location(
+                path.splitext(path.basename(mod_list[i]))[0], f'{mod_list[i]}.py'
+            )
+
             instr_module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(instr_module)
             cl = getattr(instr_module, class_name)

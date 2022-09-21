@@ -24,10 +24,10 @@ class RealPlotter:
         self.seconds_to_plot = seconds_to_plot
         self.t_start = None
 
-        self.curr_pow_text = []
-        for i in range(4):
-            self.curr_pow_text.append(
-                p.figtext(.87, 0.85 - (0.85 / 4) * i, '', fontsize=15, color='white'))
+        self.curr_pow_text = [
+            p.figtext(0.87, 0.85 - (0.85 / 4) * i, '', fontsize=15, color='white')
+            for i in range(4)
+        ]
 
         fig.patch.set_facecolor('black')
 

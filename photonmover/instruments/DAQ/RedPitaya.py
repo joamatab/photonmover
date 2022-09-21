@@ -60,13 +60,13 @@ class RedPitaya(object):
         str = ''
         while (len(str) != 1):
             str = (self._socket.recv(1))
-        if not (str == '#'):
+        if str != '#':
             return False
         str = ''
         while (len(str) != 1):
             str = (self._socket.recv(1))
         numOfNumBytes = int(str)
-        if not (numOfNumBytes > 0):
+        if numOfNumBytes <= 0:
             return False
         str = ''
         while (len(str) != numOfNumBytes):
@@ -94,7 +94,7 @@ class RedPitaya(object):
 
     def ese(self, value: int):
         """Standard Event Status Enable Command"""
-        return self.tx_txt('*ESE {}'.format(value))
+        return self.tx_txt(f'*ESE {value}')
 
     def ese_q(self):
         """Standard Event Status Enable Query"""

@@ -57,11 +57,9 @@ class Calibration(Experiment):
             if isinstance(instr, NiDAQ):
                 self.daq = instr
 
-        if ((self.pm is not None) or (self.daq is not None)) and (
-                self.laser is not None):
-            return True
-        else:
-            return False
+        return (
+            ((self.pm is not None) or (self.daq is not None))
+        ) and self.laser is not None
 
     def get_description(self):
         """
@@ -99,11 +97,8 @@ class Calibration(Experiment):
             print("Calibration cannot be performed. Doing nothing.")
             return
 
-        # Save the calibration data in the pickle file
-        pickle_file_object = open(CALIBRATION_FILENAME, 'w+b')
-        pickle.dump((wavs, meas), pickle_file_object)
-        pickle_file_object.close()
-
+        with open(CALIBRATION_FILENAME, 'w+b') as pickle_file_object:
+            pickle.dump((wavs, meas), pickle_file_object)
         self.data = [wavs, meas]
 
         return [wavs, meas]
@@ -130,10 +125,9 @@ class Calibration(Experiment):
             self.laser.set_wavelength(w)
             self.pm.set_wavelength(w)
 
-            meas_list = list()
+            meas_list = []
 
-            for i in range(MEAS_COUNT):
-
+            for _ in range(MEAS_COUNT):
                 [tap_power, received_power] = self.laser.get_powers()
                 ratio = tap_power / received_power
                 meas_list.append(ratio)
@@ -183,11 +177,7 @@ class Calibration(Experiment):
             self.daq.wait_task()
             daq_data = self.daq.read_data(MEAS_COUNT)
 
-            ratios = []
-            for i in range(len(daq_data[0])):
-                # tap_power / received_power
-                ratios.append(daq_data[1][i] / daq_data[0][i])
-
+            ratios = [daq_data[1][i] / daq_data[0][i] for i in range(len(daq_data[0]))]
             meas_array = np.array(ratios)
             ave_ratio = meas_array.mean()
             new_calibration.append(ave_ratio)

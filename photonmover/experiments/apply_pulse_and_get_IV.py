@@ -59,11 +59,11 @@ class apply_pulse_and_get_IV(Experiment):
             if isinstance(instr, HP70843B):
                 self.patt_gen = instr
 
-        if (self.smu is not None) and (
-                self.el_att is not None) and (self.patt_gen is not None):
-            return True
-        else:
-            return False
+        return (
+            self.smu is not None
+            and self.el_att is not None
+            and self.patt_gen is not None
+        )
 
     def get_description(self):
         """
@@ -123,7 +123,7 @@ class apply_pulse_and_get_IV(Experiment):
                 power_att = round(power_att)
                 self.el_att.set_attenuation(power_att)
                 real_pulse_amp = puls_amp_0dB_att * \
-                    np.power(10, -power_att / 20)
+                        np.power(10, -power_att / 20)
 
             for pulse_duration in pulse_durations:
 

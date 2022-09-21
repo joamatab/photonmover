@@ -141,11 +141,11 @@ class Keithley2400(Instrument, SourceMeter):
         :param mode: Either VOLT or CURR
         :return:
         """
-        if not (mode == 'VOLT' or mode == 'CURR'):
+        if mode not in ['VOLT', 'CURR']:
             print('Source meter mode not correct. No action taken')
             return
 
-        self.gpib.write(':SOUR:FUNC:MODE %s' % mode)  # set mode
+        self.gpib.write(f':SOUR:FUNC:MODE {mode}')
         self.mode = mode
 
         if mode == 'VOLT':
@@ -160,7 +160,7 @@ class Keithley2400(Instrument, SourceMeter):
         :return:
         """
 
-        if not (self.mode == 'VOLT'):
+        if self.mode != 'VOLT':
             self.turn_off()
             self.set_func('VOLT')
             time.sleep(0.1)
@@ -177,7 +177,7 @@ class Keithley2400(Instrument, SourceMeter):
         :return:
         """
 
-        if not (self.mode == 'CURR'):
+        if self.mode != 'CURR':
             self.turn_off()
             self.set_func('CURR')
             time.sleep(0.1)

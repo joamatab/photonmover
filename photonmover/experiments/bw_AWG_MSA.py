@@ -54,10 +54,7 @@ class BW_AWG_and_MSA(Experiment):
             if isinstance(instr, MSA):
                 self.msa = instr
 
-        if (self.msa is not None) and (self.awg is not None):
-            return True
-        else:
-            return False
+        return self.msa is not None and self.awg is not None
 
     def get_description(self):
         """

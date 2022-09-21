@@ -34,7 +34,7 @@ class LFI3751(TempController, Instrument):
 
         rm = visa.ResourceManager()
         try:
-            self.tec = rm.open_resource('COM' + str(self.com_port))
+            self.tec = rm.open_resource(f'COM{str(self.com_port)}')
         except BaseException:
             raise ValueError(
                 'Cannot connect to Wavelength Electronics temp controller')
@@ -127,8 +127,14 @@ class LFI3751(TempController, Instrument):
                     value=-0.010))
 
             # Set A/B/C parameters
-            if not set(sensor_parameters.keys()) == set(
-                    ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']):
+            if set(sensor_parameters.keys()) != {
+                'A1',
+                'A2',
+                'B1',
+                'B2',
+                'C1',
+                'C2',
+            }:
                 raise ValueError(
                     'The sensor_parameters dict must contain ONLY A1, A2, B1, B2, C1, and C2 keyword/value pairs.')
 
@@ -170,7 +176,7 @@ class LFI3751(TempController, Instrument):
                     cmd='write',
                     code=31,
                     value=199.999))
-        elif upper is not None:
+        else:
             self.tec.query(self._format_msg(cmd='write', code=31, value=upper))
 
         if lower is None:
@@ -179,7 +185,7 @@ class LFI3751(TempController, Instrument):
                     cmd='write',
                     code=32,
                     value=-199.999))
-        elif lower is not None:
+        else:
             self.tec.query(self._format_msg(cmd='write', code=32, value=lower))
 
     def _framechecksum(self, msg):
